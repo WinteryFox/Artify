@@ -1,22 +1,6 @@
-plugins {
-    kotlin("jvm") version "1.8.0"
-}
+val project_version: String by project
 
-group = "com.artify"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testImplementation(kotlin("test"))
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-kotlin {
-    jvmToolchain(8)
+subprojects {
+    version = project_version
+    group = "com.artify"
 }
