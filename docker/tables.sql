@@ -1,30 +1,47 @@
 CREATE SCHEMA media;
+CREATE SCHEMA interactions;
 
 CREATE TABLE media.assets
 (
-    id   TEXT PRIMARY KEY,
-    hash TEXT
+    hash      TEXT NOT NULL PRIMARY KEY,
+    mime_type TEXT NOT NULL
 );
 
 CREATE TABLE users
 (
-    id TEXT PRIMARY KEY,
-    avatar TEXT REFERENCES media.assets (id)
+    id          BIGINT NOT NULL PRIMARY KEY,
+    avatar_hash TEXT   NOT NULL REFERENCES media.assets (hash)
+);
+
+CREATE TABLE media.tags
+(
+    id       BIGINT NOT NULL,
+    language TEXT   NOT NULL,
+    src      TEXT   NOT NULL,
+    PRIMARY KEY (id, language)
 );
 
 CREATE TABLE media.posts
 (
-    id          TEXT PRIMARY KEY,
-    author      TEXT REFERENCES users (id),
-    title       TEXT,
-    description TEXT,
-    attachments TEXT REFERENCES media.assets (id)
+    id                   BIGINT  NOT NULL PRIMARY KEY,
+    user_id              BIGINT  NOT NULL REFERENCES users (id),
+    title                TEXT    NOT NULL,
+    content              TEXT    NOT NULL,
+    has_comments_enabled BOOLEAN NOT NULL,
+    is_private           BOOLEAN NOT NULL,
+    is_ai                BOOLEAN NOT NULL
 );
 
-CREATE SCHEMA interactions;
+CREATE TABLE media.attachments
+(
+    post_id    BIGINT NOT NULL REFERENCES media.posts (id),
+    asset_hash TEXT   NOT NULL REFERENCES media.assets (hash),
+    PRIMARY KEY (post_id, asset_hash)
+);
 
 CREATE TABLE interactions.likes
 (
-    user_id TEXT REFERENCES users (id),
-    post_id TEXT REFERENCES media.posts (id)
+    user_id BIGINT NOT NULL REFERENCES users (id),
+    post_id BIGINT NOT NULL REFERENCES media.posts (id),
+    PRIMARY KEY (user_id, post_id)
 );
