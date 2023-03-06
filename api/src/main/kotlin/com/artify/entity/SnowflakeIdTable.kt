@@ -1,6 +1,6 @@
 package com.artify.entity
 
-import com.artify.entity.Posts.Table.clientDefault
+import com.artify.entity.Illustrations.Table.clientDefault
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID

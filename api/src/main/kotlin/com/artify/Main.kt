@@ -1,5 +1,6 @@
 package com.artify
 
+import com.artify.entity.Illustrations
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -25,12 +26,12 @@ fun Application.application() {
         }
 
         route("/api") {
-            route("/posts") {
+            route("/illustrations") {
                 get {
                     // TODO: Fetch posts
                 }
 
-                post<String> {
+                post<Illustrations.Post> {
 
                 }
             }
