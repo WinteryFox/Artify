@@ -8,6 +8,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("io.ktor.plugin")
+    id("com.github.johnrengelman.shadow")
     sources
 }
 
@@ -40,4 +41,14 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql:42.5.1")
     runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
     runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
+}
+
+project.setProperty("mainClassName", "$group.$name.MainKt")
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to "com.artify.MainKt"
+        )
+    }
 }
