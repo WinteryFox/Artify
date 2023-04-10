@@ -1,5 +1,6 @@
 package com.artify.entity
 
+import io.ktor.server.plugins.requestvalidation.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.EntityID
@@ -36,5 +37,34 @@ object Illustrations {
         @SerialName("is_ai")
         val isAi: Boolean,
         val illustrations: List<String>
-    )
+    ) {
+        fun validate(): ValidationResult {
+            if (title.length > 100)
+                return ValidationResult.Invalid("Title is >100 characters")
+
+            if (body.length > 5000)
+                return ValidationResult.Invalid("Body is >5000 characters")
+
+            if (illustrations.isEmpty())
+                return ValidationResult.Invalid("Must at least upload one illustration")
+
+            if (illustrations.size > 10)
+                return ValidationResult.Invalid("Cannot upload more than 10 illustrations")
+
+            for (illustration in illustrations) {
+                if (!illustration.startsWith("data:"))
+                    return ValidationResult.Invalid("One or multiple illustrations does not start with \"data:\"")
+
+                val mimeTypeEnd = illustration.indexOf(";base64,")
+                if (mimeTypeEnd == -1)
+                    return ValidationResult.Invalid("One or multiple illustrations does not have a base64 extension")
+
+                val mimeType = illustration.substring(5, mimeTypeEnd)
+                if (mimeType !in setOf("image/png", "image/jpeg", "image/gif", "image/webp"))
+                    return ValidationResult.Invalid("One or multiple illustrations has an unsupported MIME type")
+            }
+
+            return ValidationResult.Valid
+        }
+    }
 }

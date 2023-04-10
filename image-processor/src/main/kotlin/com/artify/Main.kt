@@ -13,10 +13,6 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import java.awt.Image
-import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -44,6 +40,7 @@ suspend fun main() {
         launch {
             val connection = factory.newConnection(System.getenv("RABBITMQ_HOST"))
             val channel = connection.createChannel()
+
             channel.queueDeclare("scaling_queue", true, false, false, null)
             channel.basicConsume(
                 "scaling_queue",
@@ -54,36 +51,34 @@ suspend fun main() {
                     val body = Json.decodeFromStream<ImageProcessorMessage>(message.body.inputStream())
 
                     runBlocking {
+                        logger.trace { "Generating scaled thumbnails for hash ${body.hash}" }
+
                         val blob = s3client.getObject("artify-com", "${body.hash}/original")
                         val image = ImageIO.read(blob.objectContent)
 
-                        body.dimensions.map {
-                            async {
-                                val scaled = image.getScaledInstance(it.width, it.height, Image.SCALE_SMOOTH)
-                                val buffered = BufferedImage(it.width, it.height, image.type)
-                                buffered.graphics.drawImage(scaled, -it.x, -it.y, null)
+                        val cropped = image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
 
-                                val stream = ByteArrayOutputStream()
-                                ImageIO.write(
-                                    buffered,
-                                    blob.objectMetadata.contentType.substringAfter('/'),
-                                    stream
-                                )
+                        // TODO: Parallelize this?
+                        body.scales.map {
+                            launch {
+                                logger.trace { "Generating scaled down thumbnail at ${it.x}x${it.y}" }
 
-                                val bytes = stream.toByteArray()
-                                s3client.putObject(
+                                s3client.putImage(
                                     "artify-com",
-                                    "${body.hash}/${it.width}-${it.height}",
-                                    ByteArrayInputStream(bytes),
-                                    blob.objectMetadata.clone().apply {
-                                        contentLength = bytes.size.toLong()
-                                    }
+                                    "${body.hash}/${it.x}x${it.y}",
+                                    cropped.scale(it.x, it.y),
+                                    blob.objectMetadata.contentType.substringAfter('/')
                                 )
+
+                                logger.trace { "Finished generating thumbnail at ${it.x}x${it.y}" }
                             }
-                        }.awaitAll()
+                        }.joinAll()
+
+                        logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
                     }
 
                     channel.basicAck(message.envelope.deliveryTag, false)
+                    logger.trace { "Acknowledged message with delivery tag ${message.envelope.deliveryTag}" }
                 },
                 CancelCallback {
                     logger.trace { "Consumer $it was cancelled" }
