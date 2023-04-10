@@ -25,7 +25,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     implementation("com.rabbitmq:amqp-client:$amqp_version")
-    implementation("com.amazonaws:aws-java-sdk:$aws_version")
+    implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
 
     implementation(project(mapOf("path" to ":json")))
 

@@ -122,7 +122,10 @@ fun Application.application() {
                                     ImageProcessorMessage(
                                         hash,
                                         setOf(
-                                            ImageProcessorMessage.Dimension(0, 0, 480, 480)
+                                            ImageProcessorMessage.Dimension(0, 0, 600, 600),
+                                            ImageProcessorMessage.Dimension(0, 0, 480, 480),
+                                            ImageProcessorMessage.Dimension(0, 0, 240, 240),
+                                            ImageProcessorMessage.Dimension(0, 0, 120, 120)
                                         )
                                     )
                                 ).toByteArray()
