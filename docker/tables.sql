@@ -26,7 +26,7 @@ CREATE TABLE media.illustrations
     id                   BIGINT  NOT NULL PRIMARY KEY,
     user_id              BIGINT  NOT NULL REFERENCES users (id),
     title                TEXT    NOT NULL,
-    content              TEXT    NOT NULL,
+    body                 TEXT    NOT NULL,
     has_comments_enabled BOOLEAN NOT NULL,
     is_private           BOOLEAN NOT NULL,
     is_ai                BOOLEAN NOT NULL
