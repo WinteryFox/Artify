@@ -3,10 +3,13 @@ package com.artify.entity
 import io.ktor.server.plugins.requestvalidation.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
 
 object Illustrations {
-    object Table : SnowflakeIdTable("media.illustrations", "id") {
+    object Table : LongIdTable("media.illustrations", "id") {
         val userId = reference("user_id", Users.Table)
         val title = text("title")
         val body = text("body")
@@ -15,8 +18,8 @@ object Illustrations {
         val isAi = bool("is_ai")
     }
 
-    class Entity(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
-        companion object : SnowflakeEntityClass<Entity>(Table)
+    class Entity(id: EntityID<Long>) : LongEntity(id) {
+        companion object : LongEntityClass<Entity>(Table)
 
         var author by Users.Entity referencedOn Table.userId
         var title by Table.title
@@ -28,6 +31,7 @@ object Illustrations {
 
     @Serializable
     data class Response(
+        val id: Long,
         val author: String,
         val title: String,
         val body: String,
@@ -37,6 +41,7 @@ object Illustrations {
     ) {
         companion object {
             fun Entity.asResponse() = Response(
+                id.value,
                 author.id.value.toString(),
                 title,
                 body,

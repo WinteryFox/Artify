@@ -13,7 +13,7 @@ class SnowflakeGenerator(
     private val atomicInteger = AtomicInteger(0)
 
     companion object {
-        val EPOCH = Instant.parse("20023-01-01T00:00:00Z")
+        val EPOCH = Instant.parse("2023-01-01T00:00:00Z")
         const val MAX_MACHINE_ID = 64
         const val TIMESTAMP_SHIFT = 22
         const val MACHINE_ID_SHIFT = 16

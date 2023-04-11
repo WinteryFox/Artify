@@ -9,8 +9,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.artify.entity.Illustrations
 import com.artify.route.authRoute
-import com.artify.route.illustration.getIllustrations
-import com.artify.route.illustration.postIllustration
+import com.artify.route.illustrationsRoute
 import com.auth0.jwk.JwkProviderBuilder
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
@@ -125,12 +124,7 @@ fun Application.application() {
 
         route("/api") {
             authRoute(cognitoProvider)
-
-            route("/illustrations") {
-                getIllustrations()
-
-                postIllustration()
-            }
+            illustrationsRoute()
         }
     }
 }
