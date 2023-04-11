@@ -45,6 +45,8 @@ dependencies {
     implementation(project(mapOf("path" to ":json")))
 
     implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
+    implementation("com.amazonaws:aws-java-sdk-cognitoidp:$aws_version")
+
     implementation("com.rabbitmq:amqp-client:$amqp_version")
     implementation("com.zaxxer:HikariCP:5.0.1")
     runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")

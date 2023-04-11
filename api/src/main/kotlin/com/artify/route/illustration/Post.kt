@@ -3,6 +3,8 @@ package com.artify.route.illustration
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.artify.connection
 import com.artify.entity.Illustrations
+import com.artify.entity.Illustrations.Response.Companion.asResponse
+import com.artify.entity.Users
 import com.artify.image.ImageProcessorMessage
 import com.artify.s3client
 import com.rabbitmq.client.AMQP
@@ -18,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.apache.commons.codec.binary.Hex
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.security.MessageDigest
@@ -25,8 +28,24 @@ import java.util.*
 import javax.imageio.ImageIO
 
 fun Route.postIllustration() {
-    post<Illustrations.Post> { body ->
-        body.illustrations.map { illustration ->
+    post<Illustrations.Post> { request ->
+        val user = transaction {
+            Users.Entity.findById(UUID.fromString(""))
+        } ?: throw BadRequestException("")
+
+        val entity = transaction {
+            Illustrations.Entity.new {
+                author = user
+                title = request.title
+                body = request.body
+                commentsEnabled = request.commentsEnabled
+                isPrivate = request.isPrivate
+                isAi = request.isAi
+            }
+        }
+
+        // Process illustrations, put into bucket and dispatch RabbitMQ message for thumbnails
+        request.illustrations.map { illustration ->
             async {
                 val mimeTypeEnd = illustration.indexOf(";base64,")
                 val mimeType = illustration.substring(5, mimeTypeEnd)
@@ -84,6 +103,6 @@ fun Route.postIllustration() {
             }
         }.awaitAll()
 
-        call.respond(HttpStatusCode.OK)
+        call.respond(HttpStatusCode.Created, entity.asResponse())
     }
 }

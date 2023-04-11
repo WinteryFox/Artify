@@ -9,8 +9,9 @@ CREATE TABLE media.assets
 
 CREATE TABLE users
 (
-    id          BIGINT NOT NULL PRIMARY KEY,
-    avatar_hash TEXT   NOT NULL REFERENCES media.assets (hash)
+    id       TEXT NOT NULL PRIMARY KEY,
+    username TEXT NOT NULL,
+    avatar   TEXT REFERENCES media.assets (hash)
 );
 
 CREATE TABLE media.tags
@@ -24,7 +25,7 @@ CREATE TABLE media.tags
 CREATE TABLE media.illustrations
 (
     id                   BIGINT  NOT NULL PRIMARY KEY,
-    user_id              BIGINT  NOT NULL REFERENCES users (id),
+    user_id              TEXT    NOT NULL REFERENCES users (id),
     title                TEXT    NOT NULL,
     body                 TEXT    NOT NULL,
     has_comments_enabled BOOLEAN NOT NULL,
@@ -41,15 +42,15 @@ CREATE TABLE media.attachments
 
 CREATE TABLE interactions.likes
 (
-    user_id BIGINT NOT NULL REFERENCES users (id),
+    user_id TEXT   NOT NULL REFERENCES users (id),
     post_id BIGINT NOT NULL REFERENCES media.illustrations (id),
     PRIMARY KEY (user_id, post_id)
 );
 
 CREATE TABLE interactions.follows
 (
-    follower_id BIGINT NOT NULL REFERENCES users (id),
-    followee_id BIGINT NOT NULL REFERENCES users (id),
+    follower_id TEXT NOT NULL REFERENCES users (id),
+    followee_id TEXT NOT NULL REFERENCES users (id),
     CHECK (follower_id != followee_id),
     PRIMARY KEY (follower_id, followee_id)
 );

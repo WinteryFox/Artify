@@ -10,7 +10,7 @@ object Illustrations {
         val userId = reference("user_id", Users.Table)
         val title = text("title")
         val body = text("body")
-        val hasCommentsEnabled = bool("has_comments_enabled")
+        val commentsEnabled = bool("comments_enabled")
         val isPrivate = bool("is_private")
         val isAi = bool("is_ai")
     }
@@ -18,12 +18,33 @@ object Illustrations {
     class Entity(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
         companion object : SnowflakeEntityClass<Entity>(Table)
 
-        var user by Users.Entity referencedOn Table.userId
+        var author by Users.Entity referencedOn Table.userId
         var title by Table.title
         var body by Table.body
-        var hasCommentsEnabled by Table.hasCommentsEnabled
+        var commentsEnabled by Table.commentsEnabled
         var isPrivate by Table.isPrivate
         var isAi by Table.isAi
+    }
+
+    @Serializable
+    data class Response(
+        val author: String,
+        val title: String,
+        val body: String,
+        val commentsEnabled: Boolean,
+        val isPrivate: Boolean,
+        val isAi: Boolean
+    ) {
+        companion object {
+            fun Entity.asResponse() = Response(
+                author.id.value.toString(),
+                title,
+                body,
+                commentsEnabled,
+                isPrivate,
+                isAi
+            )
+        }
     }
 
     @Serializable
