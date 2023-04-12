@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import com.artify.image.ImageProcessorMessage
 import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.ConnectionFactory
@@ -53,7 +54,12 @@ suspend fun main() {
                     runBlocking {
                         logger.trace { "Generating scaled thumbnails for hash ${body.hash}" }
 
-                        val blob = s3client.getObject("artify-com", "${body.hash}/original")
+                        val blob = try {
+                            s3client.getObject("artify-com", "${body.hash}/original")
+                        } catch (e: AmazonS3Exception) {
+                            logger.error("Failed to fetch object ${body.hash}")
+                            return@runBlocking
+                        }
                         val image = ImageIO.read(blob.objectContent)
 
                         val cropped = image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
@@ -67,7 +73,7 @@ suspend fun main() {
                                     "artify-com",
                                     "${body.hash}/${it.x}x${it.y}",
                                     cropped.scale(it.x, it.y),
-                                    blob.objectMetadata.contentType.substringAfter('/')
+                                    blob.objectMetadata.contentType
                                 )
 
                                 logger.trace { "Finished generating thumbnail at ${it.x}x${it.y}" }

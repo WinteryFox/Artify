@@ -1,5 +1,6 @@
 package com.artify.entity
 
+import com.artify.textArray
 import io.ktor.server.plugins.requestvalidation.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,6 +17,7 @@ object Illustrations {
         val commentsEnabled = bool("comments_enabled")
         val isPrivate = bool("is_private")
         val isAi = bool("is_ai")
+        val hashes = textArray("hashes")
     }
 
     class Entity(id: EntityID<Long>) : LongEntity(id) {
@@ -27,6 +29,7 @@ object Illustrations {
         var commentsEnabled by Table.commentsEnabled
         var isPrivate by Table.isPrivate
         var isAi by Table.isAi
+        var hashes by Table.hashes
     }
 
     @Serializable
@@ -37,7 +40,8 @@ object Illustrations {
         val body: String,
         val commentsEnabled: Boolean,
         val isPrivate: Boolean,
-        val isAi: Boolean
+        val isAi: Boolean,
+        val hashes: List<String>
     ) {
         companion object {
             fun Entity.asResponse() = Response(
@@ -47,7 +51,8 @@ object Illustrations {
                 body,
                 commentsEnabled,
                 isPrivate,
-                isAi
+                isAi,
+                hashes.toList()
             )
         }
     }

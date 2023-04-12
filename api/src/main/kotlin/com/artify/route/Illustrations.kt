@@ -48,25 +48,18 @@ fun Route.illustrationsRoute() {
         post<Illustrations.Post> { request ->
             val user = transaction {
                 // TODO
-                Users.Entity.findById(UUID.fromString("9f96f252-a038-4cbc-967d-73ea0ef90146"))
+                Users.Entity.findById(UUID.fromString("7b1a314c-196e-4920-a3f7-32b36aee45e0"))
             } ?: throw BadRequestException("")
 
-            val entity = transaction {
-                Illustrations.Entity.new(defaultSnowflakeGenerator.nextId().id) {
-                    author = user
-                    title = request.title
-                    body = request.body
-                    commentsEnabled = request.commentsEnabled
-                    isPrivate = request.isPrivate
-                    isAi = request.isAi
-                }.asResponse()
-            }
-
             // Process illustrations, put into bucket and dispatch RabbitMQ message for thumbnails
-            request.illustrations.map { illustration ->
+            val resultHashes = request.illustrations.map { illustration ->
                 async {
                     val mimeTypeEnd = illustration.indexOf(";base64,")
-                    val mimeType = illustration.substring(5, mimeTypeEnd)
+                    val mimeType = try {
+                        ContentType.parse(illustration.substring(5, mimeTypeEnd))
+                    } catch (e: BadContentTypeFormatException) {
+                        throw BadRequestException("Failed to parse content type")
+                    }
 
                     val data = Base64.getDecoder().decode(illustration.substring(mimeTypeEnd + 8))
                     val image = try {
@@ -81,7 +74,7 @@ fun Route.illustrationsRoute() {
                         "$hash/original",
                         ByteArrayInputStream(data),
                         ObjectMetadata().apply {
-                            contentType = mimeType
+                            contentType = mimeType.toString()
                             contentLength = data.size.toLong()
                         }
                     )
@@ -118,8 +111,22 @@ fun Route.illustrationsRoute() {
                             ).toByteArray()
                         )
                     }
+
+                    return@async hash
                 }
             }.awaitAll()
+
+            val entity = transaction {
+                Illustrations.Entity.new(defaultSnowflakeGenerator.nextId().id) {
+                    author = user
+                    title = request.title
+                    body = request.body
+                    commentsEnabled = request.commentsEnabled
+                    isPrivate = request.isPrivate
+                    isAi = request.isAi
+                    hashes = resultHashes.toTypedArray()
+                }.asResponse()
+            }
 
             call.respond(HttpStatusCode.Created, entity)
         }

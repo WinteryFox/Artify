@@ -1,17 +1,11 @@
 CREATE SCHEMA media;
 CREATE SCHEMA interactions;
 
-CREATE TABLE media.assets
-(
-    hash      TEXT NOT NULL PRIMARY KEY,
-    mime_type TEXT NOT NULL
-);
-
 CREATE TABLE users
 (
     id       UUID NOT NULL PRIMARY KEY,
     username TEXT NOT NULL,
-    avatar   TEXT REFERENCES media.assets (hash)
+    avatar   TEXT
 );
 
 CREATE TABLE media.tags
@@ -26,18 +20,12 @@ CREATE TABLE media.illustrations
 (
     id               BIGINT  NOT NULL PRIMARY KEY,
     user_id          UUID    NOT NULL REFERENCES users (id),
-    title            TEXT    NOT NULL,
-    body             TEXT    NOT NULL,
+    title            TEXT    NOT NULL CHECK (length(title) > 0 AND length(title) < 100),
+    body             TEXT    NOT NULL CHECK (length(body) < 5000),
     comments_enabled BOOLEAN NOT NULL,
     is_private       BOOLEAN NOT NULL,
-    is_ai            BOOLEAN NOT NULL
-);
-
-CREATE TABLE media.attachments
-(
-    post_id    BIGINT NOT NULL REFERENCES media.illustrations (id),
-    asset_hash TEXT   NOT NULL REFERENCES media.assets (hash),
-    PRIMARY KEY (post_id, asset_hash)
+    is_ai            BOOLEAN NOT NULL,
+    hashes           TEXT[]  NOT NULL CHECK (array_length(hashes, 1) <= 10)
 );
 
 CREATE TABLE interactions.likes
@@ -49,8 +37,8 @@ CREATE TABLE interactions.likes
 
 CREATE TABLE interactions.follows
 (
-    follower_id UUID NOT NULL REFERENCES users (id),
-    followee_id UUID NOT NULL REFERENCES users (id),
-    CHECK (follower_id != followee_id),
-    PRIMARY KEY (follower_id, followee_id)
+    target_id UUID NOT NULL REFERENCES users (id),
+    user_id   UUID NOT NULL REFERENCES users (id),
+    CHECK (target_id != user_id),
+    PRIMARY KEY (target_id, user_id)
 );

@@ -29,7 +29,7 @@ fun BufferedImage.toByteArray(type: String): ByteArray {
 }
 
 fun AmazonS3.putImage(bucket: String, key: String, image: BufferedImage, type: String): PutObjectResult {
-    val bytes = image.toByteArray(type)
+    val bytes = image.toByteArray(type.substringAfter('/'))
 
     return putObject(
         bucket,
