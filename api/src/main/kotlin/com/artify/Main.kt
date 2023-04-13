@@ -33,42 +33,42 @@ import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
-val s3client: AmazonS3 = AmazonS3ClientBuilder
-    .standard()
-    .withCredentials(
-        AWSStaticCredentialsProvider(
-            BasicAWSCredentials(
-                System.getenv("AWS_ACCESS_KEY"),
-                System.getenv("AWS_SECRET_KEY")
-            )
-        )
-    )
-    .withRegion(Regions.EU_CENTRAL_1)
-    .build()
-
-val cognitoProvider: AWSCognitoIdentityProvider = AWSCognitoIdentityProviderClientBuilder
-    .standard()
-    .withCredentials(
-        AWSStaticCredentialsProvider(
-            BasicAWSCredentials(
-                System.getenv("AWS_ACCESS_KEY"),
-                System.getenv("AWS_SECRET_KEY")
-            )
-        )
-    )
-    .withRegion(Regions.EU_CENTRAL_1)
-    .build()
-
-val factory = ConnectionFactory()
-val connection: Connection = factory.newConnection(System.getenv("RABBITMQ_HOST"))
-
 @Suppress("unused")
-fun Application.application() {
+fun Application.api() {
+    val s3client: AmazonS3 = AmazonS3ClientBuilder
+        .standard()
+        .withCredentials(
+            AWSStaticCredentialsProvider(
+                BasicAWSCredentials(
+                    System.getenv("AWS_ACCESS_KEY"),
+                    System.getenv("AWS_SECRET_KEY")
+                )
+            )
+        )
+        .withRegion(Regions.EU_CENTRAL_1)
+        .build()
+
+    val cognitoProvider: AWSCognitoIdentityProvider = AWSCognitoIdentityProviderClientBuilder
+        .standard()
+        .withCredentials(
+            AWSStaticCredentialsProvider(
+                BasicAWSCredentials(
+                    System.getenv("AWS_ACCESS_KEY"),
+                    System.getenv("AWS_SECRET_KEY")
+                )
+            )
+        )
+        .withRegion(Regions.EU_CENTRAL_1)
+        .build()
+
+    val factory = ConnectionFactory()
+    val connection: Connection = factory.newConnection(System.getenv("RABBITMQ_HOST"))
+
     Database.connect(HikariDataSource {
         driverClassName = "org.postgresql.Driver"
-        jdbcUrl = System.getenv("POSTGRES_HOST")
-        username = System.getenv("POSTGRES_USER")
-        password = System.getenv("POSTGRES_PASSWORD")
+        jdbcUrl = environment.config.property("postgres.host").getString()
+        username = environment.config.property("postgres.username").getString()
+        password = environment.config.property("postgres.password").getString()
         isAutoCommit = false
         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
     })
@@ -124,7 +124,7 @@ fun Application.application() {
 
         route("/api") {
             authRoute(cognitoProvider)
-            illustrationsRoute()
+            illustrationsRoute(s3client, connection)
         }
     }
 }

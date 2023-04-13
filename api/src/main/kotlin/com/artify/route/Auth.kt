@@ -43,9 +43,9 @@ private fun secretHash(id: String, email: String, secret: String): String {
 }
 
 fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
-    val cognitoPoolId = application.environment.config.property("cognito.pool").getString()
-    val cognitoClientId = application.environment.config.property("cognito.client.id").getString()
-    val cognitoClientSecret = application.environment.config.property("cognito.client.secret").getString()
+    val cognitoPoolId = application.environment.config.property("aws.cognito.pool").getString()
+    val cognitoClientId = application.environment.config.property("aws.cognito.client.id").getString()
+    val cognitoClientSecret = application.environment.config.property("aws.cognito.client.secret").getString()
 
     route("/login") {
         post<Login> { request ->

@@ -1,14 +1,14 @@
 package com.artify.route
 
+import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
-import com.artify.connection
 import com.artify.entity.Illustrations
 import com.artify.entity.Illustrations.Response.Companion.asResponse
 import com.artify.entity.Users
 import com.artify.entity.defaultSnowflakeGenerator
 import com.artify.image.ImageProcessorMessage
-import com.artify.s3client
 import com.rabbitmq.client.AMQP
+import com.rabbitmq.client.Connection
 import com.rabbitmq.client.MessageProperties
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -29,7 +29,10 @@ import java.security.MessageDigest
 import java.util.*
 import javax.imageio.ImageIO
 
-fun Route.illustrationsRoute() {
+fun Route.illustrationsRoute(
+    s3client: AmazonS3,
+    amqp: Connection
+) {
     route("/illustrations") {
         get {
             // TODO
@@ -48,7 +51,7 @@ fun Route.illustrationsRoute() {
         post<Illustrations.Post> { request ->
             val user = transaction {
                 // TODO
-                Users.Entity.findById(UUID.fromString("7b1a314c-196e-4920-a3f7-32b36aee45e0"))
+                Users.Entity.findById(UUID.fromString("d10a0310-e054-4c3d-a3f2-d175e7c9cd2d"))
             } ?: throw BadRequestException("")
 
             // Process illustrations, put into bucket and dispatch RabbitMQ message for thumbnails
@@ -80,7 +83,7 @@ fun Route.illustrationsRoute() {
                     )
 
                     launch {
-                        val channel = connection.createChannel()
+                        val channel = amqp.createChannel()
                         channel.queueDeclare("scaling_queue", true, false, false, null)
 
                         val cropWidth = if (image.width < image.height) image.width else image.height
