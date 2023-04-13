@@ -73,14 +73,6 @@ fun Application.api() {
         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
     })
 
-    val jwtRealm = ""
-    val jwtAudience = ""
-    val jwtIssuer = "artify"
-    val jwtProvider = JwkProviderBuilder(jwtIssuer)
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
-
     install(AutoHeadResponse)
     install(ContentNegotiation) {
         json(Json {
@@ -99,20 +91,23 @@ fun Application.api() {
     }
     install(Authentication) {
         jwt {
-            realm = jwtRealm
+            this@api.environment.config.property("aws.cognito.client.id").getString()
+            val issuer = this@api.environment.config.property("aws.cognito.issuer").getString()
+            val provider = JwkProviderBuilder(issuer)
+                .cached(10, 24, TimeUnit.HOURS)
+                .rateLimited(10, 1, TimeUnit.MINUTES)
+                .build()
 
             verifier(
-                jwtProvider,
-                jwtIssuer
-            ) {
-                acceptLeeway(3)
-            }
-
+                provider,
+                issuer
+            )
             validate { credentials ->
-                if (credentials.payload.audience.contains(jwtAudience))
+                // TODO: A lot of people seem to reference the audience but its not present in the tokens for this?
+                //if (credentials.payload.audience.contains(audience))
                     JWTPrincipal(credentials.payload)
-                else
-                    null
+                //else
+                //    null
             }
         }
     }

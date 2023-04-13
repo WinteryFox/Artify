@@ -5,9 +5,13 @@ import com.amazonaws.services.cognitoidp.model.*
 import com.artify.entity.Users
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.pipeline.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
@@ -18,6 +22,19 @@ import javax.crypto.spec.SecretKeySpec
 data class Login(
     val email: String,
     val password: String
+)
+
+@Serializable
+data class Jwt(
+    @SerialName("id_token")
+    val idToken: String,
+    @SerialName("refresh_token")
+    val refreshToken: String,
+    @SerialName("access_token")
+    val accessToken: String,
+    @SerialName("expires_in")
+    val expiresIn: Int,
+    val type: String
 )
 
 @Serializable
@@ -49,7 +66,6 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
 
     route("/login") {
         post<Login> { request ->
-            // TODO
             val result = try {
                 provider.adminInitiateAuth(
                     AdminInitiateAuthRequest()
@@ -68,7 +84,18 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                 throw BadRequestException("Email or password is incorrect")
             }
 
-            call.respond(HttpStatusCode.OK)
+            if (result.challengeName == null)
+                call.respond(
+                    HttpStatusCode.OK, Jwt(
+                        result.authenticationResult.idToken,
+                        result.authenticationResult.refreshToken,
+                        result.authenticationResult.accessToken,
+                        result.authenticationResult.expiresIn,
+                        result.authenticationResult.tokenType
+                    )
+                )
+            else
+                call.respond(HttpStatusCode.Unauthorized) // TODO: Handle additional challenges
         }
     }
 
@@ -118,5 +145,13 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                 call.respond(HttpStatusCode.OK)
             }
         }
+    }
+}
+
+fun PipelineContext<*, ApplicationCall>.getUser(): Users.Entity? {
+    val principal = call.principal<JWTPrincipal>() ?: return null
+
+    return transaction {
+        Users.Entity.findById(UUID.fromString(principal.subject))
     }
 }
