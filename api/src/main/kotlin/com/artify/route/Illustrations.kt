@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.artify.entity.Illustrations
 import com.artify.entity.Illustrations.Response.Companion.asResponse
+import com.artify.entity.Users
 import com.artify.entity.defaultSnowflakeGenerator
 import com.artify.image.ImageProcessorMessage
 import com.rabbitmq.client.AMQP
@@ -106,6 +107,22 @@ fun Route.illustrationsRoute(
 
                 for (image in images)
                     dispatchImageProcessingMessage(amqpConnection, image.key, image.value)
+            }
+        }
+
+        route("/{id}") {
+            get {
+                val result = transaction {
+                    Illustrations.Entity
+                        .find { Illustrations.Table.id.eq(call.parameters["id"]?.toLong()) }
+                        .singleOrNull()
+                        ?.asResponse()
+                }
+
+                if (result != null)
+                    call.respond(HttpStatusCode.OK, result)
+                else
+                    call.respond(HttpStatusCode.NotFound)
             }
         }
     }

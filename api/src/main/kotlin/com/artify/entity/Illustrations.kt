@@ -1,5 +1,6 @@
 package com.artify.entity
 
+import com.artify.entity.Users.Response.Companion.asResponse
 import com.artify.textArray
 import io.ktor.server.plugins.requestvalidation.*
 import kotlinx.serialization.SerialName
@@ -35,7 +36,7 @@ object Illustrations {
     @Serializable
     data class Response(
         val id: Long,
-        val author: String,
+        val author: Users.Response,
         val title: String,
         val body: String,
         val commentsEnabled: Boolean,
@@ -46,7 +47,7 @@ object Illustrations {
         companion object {
             fun Entity.asResponse() = Response(
                 id.value,
-                author.id.value.toString(),
+                author.asResponse(),
                 title,
                 body,
                 commentsEnabled,

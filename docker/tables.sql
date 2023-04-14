@@ -4,6 +4,7 @@ CREATE SCHEMA interactions;
 CREATE TABLE users
 (
     id       UUID NOT NULL PRIMARY KEY,
+    handle   TEXT NOT NULL UNIQUE,
     username TEXT NOT NULL,
     avatar   TEXT
 );
