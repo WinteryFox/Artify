@@ -2,7 +2,6 @@ package com.artify.route
 
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.*
-import com.artify.aws.AuthenticationHelper
 import com.artify.aws.DeviceSecretVerifier
 import com.artify.entity.Users
 import com.auth0.jwt.exceptions.TokenExpiredException
@@ -14,20 +13,13 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.util.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.apache.commons.codec.binary.Hex
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.security.MessageDigest
-import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.UnsupportedOperationException
-import kotlin.random.Random.Default.nextBytes
 
 @Serializable
 data class Login(

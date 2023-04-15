@@ -1,14 +1,11 @@
 package com.artify.aws
 
-import at.favre.lib.hkdf.HKDF
 import com.amazonaws.services.cognitoidp.model.AdminInitiateAuthResult
 import com.amazonaws.services.cognitoidp.model.RespondToAuthChallengeRequest
 import com.amazonaws.util.StringUtils
-import com.artify.aws.AuthenticationHelper.Hkdf
 import org.apache.commons.codec.binary.Hex
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.*
@@ -99,8 +96,11 @@ class DeviceSecretVerifier(
         val x = BigInteger(1, messageDigest.digest(userIdHash))
         val S = B.subtract(k.multiply(G.modPow(x, N))).modPow(a.add(u.multiply(x)), N).mod(N)
 
-        return HKDF.fromHmacSha256()
-            .extractAndExpand(S.toByteArray(), u.toByteArray(), "Caldera Derived Key".toByteArray(), 16)
+        val hkdf = Hkdf.getInstance("HmacSHA256")
+        hkdf.init(S.toByteArray(), u.toByteArray())
+        return hkdf.deriveKey("Caldera Derived Key".toByteArray(), 16)
+        /*return HKDF.fromHmacSha256()
+            .extractAndExpand(S.toByteArray(), u.toByteArray(), "Caldera Derived Key".toByteArray(), 16)*/
     }
 
     fun userSrpAuthRequest(
@@ -201,8 +201,11 @@ class DeviceSecretVerifier(
         val x = BigInteger(1, digest.digest(userIdHash))
         val S = (B.subtract(k.multiply(G.modPow(x, N))).modPow(a.add(u.multiply(x)), N)).mod(N)
 
-        return HKDF.fromHmacSha256()
-            .extractAndExpand(S.toByteArray(), u.toByteArray(), "Caldera Derived Key".toByteArray(), 16)
+        val hkdf = Hkdf.getInstance("HmacSHA256")
+        hkdf.init(S.toByteArray(), u.toByteArray())
+        return hkdf.deriveKey("Caldera Derived Key".toByteArray(), 16)
+        //return HKDF.fromHmacSha256()
+        //    .extractAndExpand(S.toByteArray(), u.toByteArray(), "Caldera Derived Key".toByteArray(), 16)
     }
 
     fun verifier(deviceKey: String, deviceGroupKey: String): String {
