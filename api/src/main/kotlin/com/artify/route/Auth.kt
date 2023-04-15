@@ -17,6 +17,7 @@ import io.ktor.util.pipeline.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -138,26 +139,20 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                                 mapOf(
                                     "USERNAME" to request.email,
                                     "SRP_A" to verifier.srpa(),
-                                    "SECRET_HASH" to secretHash(cognitoClientId, request.email, cognitoClientSecret)
+                                    "DEVICE_KEY" to request.deviceKey,
+                                    "SECRET_HASH" to secretHash(cognitoClientId, request.email, cognitoClientSecret),
                                 )
                             )
                             .withUserPoolId(cognitoPoolId)
                             .withClientId(cognitoClientId)
                     )
 
-                    /*val date = SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.US)
+                    val date = SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.US)
                     date.timeZone = SimpleTimeZone(SimpleTimeZone.UTC_TIME, "UTC")
-                    val timestamp = date.format(Date())*/
+                    val timestamp = date.format(Date())
 
-                    provider.respondToAuthChallenge(
-                        verifier.userSrpAuthRequest(
-                            auth,
-                            cognitoPoolId,
-                            cognitoClientId,
-                            request.password,
-                            secretHash(cognitoClientId, auth.challengeParameters["USERNAME"], cognitoClientSecret)
-                        )
-                        /*RespondToAuthChallengeRequest()
+                    provider.adminRespondToAuthChallenge(
+                        AdminRespondToAuthChallengeRequest()
                             .withChallengeName(auth.challengeName)
                             .withChallengeResponses(
                                 mapOf(
@@ -172,10 +167,15 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                                     "PASSWORD_CLAIM_SECRET_BLOCK" to auth.challengeParameters["SECRET_BLOCK"],
                                     "TIMESTAMP" to timestamp,
                                     "USERNAME" to auth.challengeParameters["USERNAME"],
-                                    "SECRET_HASH" to secretHash(cognitoClientId, auth.challengeParameters["USERNAME"]!!, cognitoClientSecret)
+                                    "SECRET_HASH" to secretHash(
+                                        cognitoClientId,
+                                        auth.challengeParameters["USERNAME"]!!,
+                                        cognitoClientSecret
+                                    )
                                 )
                             )
-                            .withClientId(cognitoClientId)*/
+                            .withClientId(cognitoClientId)
+                            .withUserPoolId(cognitoPoolId)
                     ).authenticationResult
                 } else {
                     val auth = provider.adminInitiateAuth(

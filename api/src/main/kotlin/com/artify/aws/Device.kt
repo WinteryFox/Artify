@@ -1,13 +1,9 @@
 package com.artify.aws
 
-import com.amazonaws.services.cognitoidp.model.AdminInitiateAuthResult
-import com.amazonaws.services.cognitoidp.model.RespondToAuthChallengeRequest
-import com.amazonaws.util.StringUtils
 import org.apache.commons.codec.binary.Hex
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -64,96 +60,6 @@ class DeviceSecretVerifier(
         A = tempA
     }
 
-    private fun getPasswordAuthenticationKey(
-        userId: String,
-        userPassword: String,
-        poolId: String,
-        B: BigInteger,
-        salt: BigInteger
-    ): ByteArray {
-        // Authenticate the password
-        // u = H(A, B)
-        val messageDigest = MessageDigest.getInstance("SHA-256")
-        messageDigest.reset()
-        messageDigest.update(A.toByteArray())
-        val u = BigInteger(1, messageDigest.digest(B.toByteArray()))
-        if (u == BigInteger.ZERO) {
-            throw SecurityException("Hash of A and B cannot be zero")
-        }
-
-        // x = H(salt | H(poolName | userId | ":" | password))
-        messageDigest.reset()
-        messageDigest.update(
-            poolId.split("_".toRegex(), limit = 2).toTypedArray().get(1)
-                .toByteArray(StringUtils.UTF8)
-        )
-        messageDigest.update(userId.toByteArray(StringUtils.UTF8))
-        messageDigest.update(":".toByteArray(StringUtils.UTF8))
-        val userIdHash =
-            messageDigest.digest(userPassword.toByteArray(StringUtils.UTF8))
-        messageDigest.reset()
-        messageDigest.update(salt.toByteArray())
-        val x = BigInteger(1, messageDigest.digest(userIdHash))
-        val S = B.subtract(k.multiply(G.modPow(x, N))).modPow(a.add(u.multiply(x)), N).mod(N)
-
-        val hkdf = Hkdf.getInstance("HmacSHA256")
-        hkdf.init(S.toByteArray(), u.toByteArray())
-        return hkdf.deriveKey("Caldera Derived Key".toByteArray(), 16)
-        /*return HKDF.fromHmacSha256()
-            .extractAndExpand(S.toByteArray(), u.toByteArray(), "Caldera Derived Key".toByteArray(), 16)*/
-    }
-
-    fun userSrpAuthRequest(
-        challenge: AdminInitiateAuthResult,
-        poolId: String,
-        clientId: String,
-        password: String,
-        secretHash: String
-    ): RespondToAuthChallengeRequest {
-        val userIdForSRP = challenge.challengeParameters["USER_ID_FOR_SRP"]!!
-        val usernameInternal = challenge.challengeParameters["USERNAME"]!!
-        val B = BigInteger(challenge.challengeParameters["SRP_B"]!!, 16)
-        if (B.mod(N) == BigInteger.ZERO) {
-            throw SecurityException("SRP error, B cannot be zero")
-        }
-        val salt = BigInteger(challenge.challengeParameters["SALT"]!!, 16)
-        val key: ByteArray = getPasswordAuthenticationKey(userIdForSRP, password, poolId, B, salt)
-        val timestamp = Date()
-        var hmac: ByteArray? = null
-        try {
-            val mac = Mac.getInstance("HmacSHA256")
-            val keySpec = SecretKeySpec(key, "HmacSHA256")
-            mac.init(keySpec)
-            mac.update(
-                poolId.split("_".toRegex(), limit = 2).toTypedArray().get(1).toByteArray(StringUtils.UTF8)
-            )
-            mac.update(userIdForSRP.toByteArray(StringUtils.UTF8))
-            val secretBlock = com.amazonaws.util.Base64.decode(challenge.challengeParameters["SECRET_BLOCK"]!!)
-            mac.update(secretBlock)
-            val simpleDateFormat = SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.US)
-            simpleDateFormat.timeZone = SimpleTimeZone(SimpleTimeZone.UTC_TIME, "UTC")
-            val dateString = simpleDateFormat.format(timestamp)
-            val dateBytes = dateString.toByteArray(StringUtils.UTF8)
-            hmac = mac.doFinal(dateBytes)
-        } catch (e: Exception) {
-            println(e)
-        }
-        val formatTimestamp = SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.US)
-        formatTimestamp.timeZone = SimpleTimeZone(SimpleTimeZone.UTC_TIME, "UTC")
-        val srpAuthResponses: MutableMap<String, String?> = HashMap()
-        srpAuthResponses["PASSWORD_CLAIM_SECRET_BLOCK"] = challenge.challengeParameters["SECRET_BLOCK"]
-        srpAuthResponses["PASSWORD_CLAIM_SIGNATURE"] = String(com.amazonaws.util.Base64.encode(hmac), StringUtils.UTF8)
-        srpAuthResponses["TIMESTAMP"] = formatTimestamp.format(timestamp)
-        srpAuthResponses["USERNAME"] = usernameInternal
-        srpAuthResponses["SECRET_HASH"] = secretHash
-        val authChallengeRequest = RespondToAuthChallengeRequest()
-        authChallengeRequest.challengeName = challenge.challengeName
-        authChallengeRequest.clientId = clientId
-        authChallengeRequest.session = challenge.session
-        authChallengeRequest.challengeResponses = srpAuthResponses
-        return authChallengeRequest
-    }
-
     fun passwordClaimSignature(
         userIdForSrp: String,
         password: String,
@@ -167,13 +73,19 @@ class DeviceSecretVerifier(
             "HmacSHA256"
         )
 
+        val pool = if (poolId.contains('_'))
+            poolId.split('_')[1]
+        else
+            poolId
+
         val mac = Mac.getInstance("HmacSHA256")
         mac.init(keySpec)
-        mac.update(poolId.split("_", limit = 2)[1].toByteArray())
+        mac.update(pool.toByteArray())
         mac.update(userIdForSrp.toByteArray())
         mac.update(Base64.getDecoder().decode(secretBlock))
+        mac.update(timestamp.toByteArray())
 
-        return Base64.getEncoder().encodeToString(mac.doFinal(timestamp.toByteArray()))
+        return Base64.getEncoder().encodeToString(mac.doFinal())
     }
 
     private fun passwordAuthenticationKey(
@@ -182,24 +94,35 @@ class DeviceSecretVerifier(
         B: BigInteger,
         salt: BigInteger
     ): ByteArray {
+        // u = H(A, B)
         val digest = MessageDigest.getInstance("SHA-256")
         digest.update(A.toByteArray())
+        digest.update(B.toByteArray())
 
-        val u = BigInteger(1, digest.digest(B.toByteArray()))
+        val u = BigInteger(1, digest.digest())
         if (u == BigInteger.ZERO)
             throw SecurityException("Hash of A and B cannot be zero")
 
+        // x = H(salt | H(poolName | userId | ":" | password))
         digest.reset()
         digest.update(poolId.split("_", limit = 2)[1].toByteArray())
         digest.update(userId.toByteArray())
         digest.update(":".toByteArray())
-        val userIdHash = digest.digest(password.toByteArray())
+        digest.update(password.toByteArray())
+        val userIdHash = digest.digest()
 
         digest.reset()
         digest.update(salt.toByteArray())
 
         val x = BigInteger(1, digest.digest(userIdHash))
+
+        // S = (B - kg^x)^(a + ux)
         val S = (B.subtract(k.multiply(G.modPow(x, N))).modPow(a.add(u.multiply(x)), N)).mod(N)
+
+        // K = H(S)
+        digest.reset()
+        digest.update(S.toByteArray())
+        val K = digest.digest()
 
         val hkdf = Hkdf.getInstance("HmacSHA256")
         hkdf.init(S.toByteArray(), u.toByteArray())
@@ -217,11 +140,7 @@ class DeviceSecretVerifier(
         return Base64.getEncoder().encodeToString(G.modPow(x, N).toByteArray())
     }
 
-    fun srpa(): String {
-        val digest = G * salt
-        val x = BigInteger(1, digest.toByteArray())
-        return Hex.encodeHexString(digest.modPow(x, N).toByteArray())
-    }
+    fun srpa(): String = Hex.encodeHexString(A.toByteArray())
 
     private fun getUserIdHash(deviceGroupKey: String, deviceKey: String, secret: String): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
