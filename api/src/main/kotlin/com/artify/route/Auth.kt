@@ -2,7 +2,7 @@ package com.artify.route
 
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.*
-import com.artify.aws.DeviceSecretVerifier
+import com.artify.aws.DeviceHelper
 import com.artify.entity.Users
 import com.auth0.jwt.exceptions.TokenExpiredException
 import io.ktor.http.*
@@ -30,6 +30,8 @@ data class Login(
     val deviceKey: String? = null,
     @SerialName("device_group_key")
     val deviceGroupKey: String? = null,
+    @SerialName("device_password")
+    val devicePassword: String? = null,
     @SerialName("remember")
     val remember: Boolean? = null
 )
@@ -38,15 +40,19 @@ data class Login(
 data class Refresh(
     val id: String,
     @SerialName("refresh_token")
-    val refreshToken: String
+    val refreshToken: String,
+    @SerialName("device_key")
+    val deviceKey: String
 )
 
 @Serializable
 data class Jwt(
     @SerialName("device_key")
-    val deviceKey: String,
+    val deviceKey: String?,
     @SerialName("device_group_key")
-    val deviceGroupKey: String,
+    val deviceGroupKey: String?,
+    @SerialName("device_password")
+    val devicePassword: String?,
     @SerialName("expires_in")
     val expiresIn: Int,
     val type: String,
@@ -103,7 +109,6 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                         .withClientId(cognitoClientId)
                 )
             } catch (e: NotAuthorizedException) {
-                throw e
                 throw BadRequestException("Invalid refresh token")
             } catch (e: TokenExpiredException) {
                 throw BadRequestException("Refresh token expired")
@@ -112,8 +117,9 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
             if (result.challengeName == null)
                 call.respond(
                     HttpStatusCode.OK, Jwt(
-                        result.authenticationResult.newDeviceMetadata.deviceKey,
-                        result.authenticationResult.newDeviceMetadata.deviceGroupKey,
+                        null,
+                        null,
+                        null,
                         result.authenticationResult.expiresIn,
                         result.authenticationResult.tokenType,
                         result.authenticationResult.idToken,
@@ -128,17 +134,20 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
 
     route("/login") {
         post<Login> { request ->
-            val verifier = DeviceSecretVerifier(cognitoPoolId)
-
             val auth = try {
-                if (request.deviceKey != null) {
+                if (request.deviceKey?.isNotBlank() == true &&
+                    request.deviceGroupKey?.isNotBlank() == true &&
+                    request.devicePassword?.isNotBlank() == true
+                ) {
+                    val helper = DeviceHelper(request.deviceKey, request.deviceGroupKey)
+
                     val auth = provider.adminInitiateAuth(
                         AdminInitiateAuthRequest()
-                            .withAuthFlow(AuthFlowType.USER_SRP_AUTH)
+                            .withAuthFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
                             .withAuthParameters(
                                 mapOf(
                                     "USERNAME" to request.email,
-                                    "SRP_A" to verifier.srpa(),
+                                    "PASSWORD" to request.password,
                                     "DEVICE_KEY" to request.deviceKey,
                                     "SECRET_HASH" to secretHash(cognitoClientId, request.email, cognitoClientSecret),
                                 )
@@ -151,32 +160,51 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                     date.timeZone = SimpleTimeZone(SimpleTimeZone.UTC_TIME, "UTC")
                     val timestamp = date.format(Date())
 
-                    provider.adminRespondToAuthChallenge(
+                    val deviceSrpAuth = provider.adminRespondToAuthChallenge(
                         AdminRespondToAuthChallengeRequest()
-                            .withChallengeName(auth.challengeName)
+                            .withChallengeName("DEVICE_SRP_AUTH")
                             .withChallengeResponses(
                                 mapOf(
-                                    "PASSWORD_CLAIM_SIGNATURE" to verifier.passwordClaimSignature(
-                                        auth.challengeParameters["USER_ID_FOR_SRP"]!!,
-                                        request.password,
-                                        auth.challengeParameters["SRP_B"]!!,
-                                        auth.challengeParameters["SALT"]!!,
-                                        auth.challengeParameters["SECRET_BLOCK"]!!,
-                                        timestamp
-                                    ),
-                                    "PASSWORD_CLAIM_SECRET_BLOCK" to auth.challengeParameters["SECRET_BLOCK"],
+                                    "USERNAME" to request.email,
+                                    "DEVICE_KEY" to request.deviceKey,
+                                    "SRP_A" to helper.srpA(),
+                                    "SECRET_HASH" to secretHash(cognitoClientId, request.email, cognitoClientSecret)
+                                )
+                            )
+                            .withSession(auth.session)
+                            .withClientId(cognitoClientId)
+                            .withUserPoolId(cognitoPoolId)
+                    )
+
+                    val devicePasswordVerifier = provider.adminRespondToAuthChallenge(
+                        AdminRespondToAuthChallengeRequest()
+                            .withChallengeName("DEVICE_PASSWORD_VERIFIER")
+                            .withChallengeResponses(
+                                mapOf(
+                                    "USERNAME" to deviceSrpAuth.challengeParameters["USERNAME"]!!,
+                                    "PASSWORD_CLAIM_SECRET_BLOCK" to deviceSrpAuth.challengeParameters["SECRET_BLOCK"]!!,
                                     "TIMESTAMP" to timestamp,
-                                    "USERNAME" to auth.challengeParameters["USERNAME"],
+                                    "PASSWORD_CLAIM_SIGNATURE" to helper.passwordClaimSignature(
+                                        request.devicePassword,
+                                        deviceSrpAuth.challengeParameters["SRP_B"]!!,
+                                        deviceSrpAuth.challengeParameters["SALT"]!!,
+                                        timestamp,
+                                        deviceSrpAuth.challengeParameters["SECRET_BLOCK"]!!
+                                    ),
+                                    "DEVICE_KEY" to request.deviceKey,
                                     "SECRET_HASH" to secretHash(
                                         cognitoClientId,
-                                        auth.challengeParameters["USERNAME"]!!,
+                                        deviceSrpAuth.challengeParameters["USERNAME"]!!,
                                         cognitoClientSecret
                                     )
                                 )
                             )
+                            .withSession(deviceSrpAuth.session)
                             .withClientId(cognitoClientId)
                             .withUserPoolId(cognitoPoolId)
                     ).authenticationResult
+
+                    devicePasswordVerifier
                 } else {
                     val auth = provider.adminInitiateAuth(
                         AdminInitiateAuthRequest()
@@ -192,6 +220,9 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                             .withUserPoolId(cognitoPoolId)
                     ).authenticationResult
 
+                    val helper = DeviceHelper(auth.newDeviceMetadata.deviceKey, auth.newDeviceMetadata.deviceGroupKey)
+                    val config = helper.passwordVerifierConfig()
+
                     if (request.remember == true)
                         provider.confirmDevice(
                             ConfirmDeviceRequest()
@@ -200,28 +231,23 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                                 .withDeviceName(call.request.userAgent())
                                 .withDeviceSecretVerifierConfig(
                                     DeviceSecretVerifierConfigType()
-                                        .withSalt(Base64.getEncoder().encodeToString(verifier.salt.toByteArray()))
-                                        .withPasswordVerifier(
-                                            verifier.verifier(
-                                                auth.newDeviceMetadata.deviceKey,
-                                                auth.newDeviceMetadata.deviceGroupKey
-                                            )
-                                        )
+                                        .withSalt(config.salt)
+                                        .withPasswordVerifier(config.passwordVerifier)
                                 )
                         )
 
                     auth
                 }
             } catch (e: NotAuthorizedException) {
-                throw e
                 call.respond(HttpStatusCode.Unauthorized)
                 return@post
             }
 
             call.respond(
                 HttpStatusCode.OK, Jwt(
-                    request.deviceKey ?: auth.newDeviceMetadata.deviceKey,
-                    request.deviceGroupKey ?: auth.newDeviceMetadata.deviceGroupKey,
+                    if (auth.newDeviceMetadata != null) auth.newDeviceMetadata.deviceKey else null,
+                    if (auth.newDeviceMetadata != null) request.deviceGroupKey ?: auth.newDeviceMetadata.deviceGroupKey else null,
+                    if (auth.newDeviceMetadata != null) null else null, // TODO
                     auth.expiresIn,
                     auth.tokenType,
                     auth.idToken,
