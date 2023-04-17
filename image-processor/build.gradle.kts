@@ -7,6 +7,7 @@ val aws_version: String by project
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    id("com.google.cloud.tools.jib")
     id("com.github.johnrengelman.shadow")
     sources
 }
@@ -32,4 +33,17 @@ dependencies {
     runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
     runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
     runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
+}
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to "com.artify.MainKt"
+        )
+    }
+}
+
+jib {
+    to.image = "winteryfox/artify-api"
+    from.image = "amazoncorretto:19-alpine"
 }

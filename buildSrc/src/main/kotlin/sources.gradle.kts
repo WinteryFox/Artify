@@ -4,7 +4,7 @@ plugins {
 
 idea {
     module {
-        setDownloadJavadoc(true)
-        setDownloadSources(true)
+        isDownloadJavadoc = true
+        isDownloadSources = true
     }
 }

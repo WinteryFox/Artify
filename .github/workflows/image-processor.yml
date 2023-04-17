@@ -1,16 +1,16 @@
-name: Api
+name: Image Processor
 
 on:
   push:
     paths:
-      - 'api/**'
-      - '.github/workflows/api.yml'
+      - 'image-processor/**'
+      - '.github/workflows/image-processor.yml'
     branches: [ master ]
     tags-ignore:
       - '*.*'
   pull_request:
     paths:
-      - 'api/**'
+      - 'image-processor/**'
     types: [ opened, synchronize, reopened ]
 
 jobs:
@@ -38,10 +38,10 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        run: ./gradlew api:clean api:build
+        run: ./gradlew image-processor:clean image-processor:build
 
       - name: Run tests
-        run: ./gradlew api:test
+        run: ./gradlew image-processor:test
 
   publish:
     name: Publish artifacts
@@ -55,4 +55,4 @@ jobs:
 
     steps:
       - name: Publish to Docker Hub
-        run: ./gradlew api:jib -Djib.to.auth.username=${{secrets.DOCKER_USERNAME}} -Djib.to.auth.password=${{secrets.DOCKER_ACCESS_TOKEN}}
+        run: ./gradlew image-processor:jib -Djib.to.auth.username=${{secrets.DOCKER_USERNAME}} -Djib.to.auth.password=${{secrets.DOCKER_ACCESS_TOKEN}}
