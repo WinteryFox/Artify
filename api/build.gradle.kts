@@ -1,3 +1,4 @@
+val kotlin_version: String by project
 val kord_version: String by project
 val ktor_version: String by project
 val exposed_version: String by project
@@ -49,10 +50,18 @@ dependencies {
 
     implementation("com.rabbitmq:amqp-client:$amqp_version")
     implementation("com.zaxxer:HikariCP:5.0.1")
+
     runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
     runtimeOnly("org.postgresql:postgresql:42.5.4")
     runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
     runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
+
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+
+    testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
+    testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 }
 
 project.setProperty("mainClassName", "$group.$name.MainKt")
@@ -63,4 +72,13 @@ tasks.jar {
             "Main-Class" to "com.artify.MainKt"
         )
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+jib {
+    to.image = "winteryfox/artify-api"
+    from.image = "amazoncorretto:19-alpine"
 }

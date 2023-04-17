@@ -66,6 +66,7 @@ data class Jwt(
 data class Register(
     val email: String,
     val password: String,
+    val handle: String,
     val username: String
 )
 
@@ -278,6 +279,7 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
 
             transaction {
                 Users.Entity.new(UUID.fromString(result.userSub)) {
+                    handle = request.handle
                     username = request.username
                 }
             }
