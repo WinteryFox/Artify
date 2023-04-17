@@ -1,5 +1,6 @@
 package com.artify.aws
 
+import org.apache.commons.codec.binary.Hex
 import java.lang.RuntimeException
 import java.math.BigInteger
 import java.nio.charset.Charset
@@ -96,7 +97,7 @@ class DeviceHelper(
         return Base64.getEncoder().encodeToString(signature)
     }
 
-    fun srpA(): String = HexFormat.of().formatHex(A.toByteArray())
+    fun srpA(): String = Hex.encodeHexString(A.toByteArray())
 
     fun passwordVerifierConfig(): PasswordVerifier {
         // RANDOM_PASSWORD = 40 random bytes, base64-encoded
