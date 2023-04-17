@@ -50,6 +50,10 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
 
+    strategy:
+      matrix:
+        java: [ 19 ]
+
     steps:
       - uses: actions/checkout@v2
         with:
