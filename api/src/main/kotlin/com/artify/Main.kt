@@ -8,6 +8,7 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.artify.entity.Illustrations
+import com.artify.route.assetsRoute
 import com.artify.route.authRoute
 import com.artify.route.illustrationsRoute
 import com.artify.route.usersRoute
@@ -122,6 +123,7 @@ fun Application.api() {
             authRoute(cognitoProvider)
             usersRoute()
             illustrationsRoute(s3client, connection)
+            assetsRoute(s3client)
         }
     }
 }

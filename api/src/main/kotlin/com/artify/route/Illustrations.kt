@@ -23,6 +23,7 @@ import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.*
@@ -68,11 +69,6 @@ fun Route.illustrationsRoute(
                 val images = request.illustrations.map { illustration ->
                     async {
                         val mimeTypeEnd = illustration.indexOf(";base64,")
-                        val mimeType = try {
-                            ContentType.parse(illustration.substring(5, mimeTypeEnd))
-                        } catch (e: BadContentTypeFormatException) {
-                            throw BadRequestException("Failed to parse content type")
-                        }
 
                         val data = Base64.getDecoder().decode(illustration.substring(mimeTypeEnd + 8))
                         val image = try {
@@ -81,14 +77,22 @@ fun Route.illustrationsRoute(
                             throw BadRequestException("Failed to read one or multiple illustrations")
                         }
 
+                        val stream = ByteArrayOutputStream()
+                        ImageIO.write(
+                            image,
+                            "png",
+                            stream
+                        )
+                        val bytes = stream.toByteArray()
+
                         val hash = Hex.encodeHexString(MessageDigest.getInstance("MD5").digest(data))
                         s3client.putObject(
                             "artify-com",
                             "$hash/original",
-                            ByteArrayInputStream(data),
+                            ByteArrayInputStream(bytes),
                             ObjectMetadata().apply {
-                                contentType = mimeType.toString()
-                                contentLength = data.size.toLong()
+                                contentType = "image/png"
+                                contentLength = bytes.size.toLong()
                             }
                         )
 

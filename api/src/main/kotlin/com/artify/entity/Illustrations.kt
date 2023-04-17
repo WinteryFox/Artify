@@ -95,7 +95,7 @@ object Illustrations {
                     return ValidationResult.Invalid("One or multiple illustrations does not have a base64 extension")
 
                 val mimeType = illustration.substring(5, mimeTypeEnd)
-                if (mimeType !in setOf("image/png", "image/jpeg", "image/gif", "image/webp"))
+                if (mimeType !in setOf("image/png", "image/jpeg", "image/webp"))
                     return ValidationResult.Invalid("One or multiple illustrations has an unsupported MIME type")
             }
 
