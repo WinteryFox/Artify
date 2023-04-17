@@ -46,7 +46,6 @@ dependencies {
 
     implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
     implementation("com.amazonaws:aws-java-sdk-cognitoidp:$aws_version")
-    implementation("at.favre.lib:hkdf:2.0.0")
 
     implementation("com.rabbitmq:amqp-client:$amqp_version")
     implementation("com.zaxxer:HikariCP:5.0.1")
