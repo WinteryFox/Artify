@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.artify.entity.Illustrations
 import com.artify.entity.Illustrations.Response.Companion.asResponse
-import com.artify.entity.Users
 import com.artify.entity.defaultSnowflakeGenerator
 import com.artify.image.ImageProcessorMessage
 import com.rabbitmq.client.AMQP
@@ -48,7 +47,13 @@ fun Route.illustrationsRoute(
                     }
                 } else {
                     // TODO: Apply some kind of recommendation algorithm
-                    emptyList()
+                    transaction {
+                        Illustrations.Entity
+                            .all()
+                            .limit(50)
+                            .orderBy(Illustrations.Table.id to SortOrder.DESC)
+                            .map { it.asResponse() }
+                    }
                 }
 
                 call.respond(HttpStatusCode.OK, illustrations)
@@ -112,9 +117,16 @@ fun Route.illustrationsRoute(
 
         route("/{id}") {
             get {
+                val id = try {
+                    call.parameters["id"]?.toLong()
+                        ?: return@get call.respond(HttpStatusCode.NotFound)
+                } catch (e: NumberFormatException) {
+                    return@get call.respond(HttpStatusCode.NotFound)
+                }
+
                 val result = transaction {
                     Illustrations.Entity
-                        .find { Illustrations.Table.id.eq(call.parameters["id"]?.toLong()) }
+                        .find { Illustrations.Table.id.eq(id) }
                         .singleOrNull()
                         ?.asResponse()
                 }

@@ -39,8 +39,11 @@ object Illustrations {
         val author: Users.Response,
         val title: String,
         val body: String,
+        @SerialName("comments_enabled")
         val commentsEnabled: Boolean,
+        @SerialName("is_private")
         val isPrivate: Boolean,
+        @SerialName("is_ai")
         val isAi: Boolean,
         val hashes: List<String>
     ) {
