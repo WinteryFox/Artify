@@ -107,7 +107,7 @@ fun Application.api() {
             validate { credentials ->
                 // TODO: A lot of people seem to reference the audience but its not present in the tokens for this?
                 //if (credentials.payload.audience.contains(audience))
-                    JWTPrincipal(credentials.payload)
+                JWTPrincipal(credentials.payload)
                 //else
                 //    null
             }
