@@ -108,9 +108,9 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                         .withClientId(cognitoClientId)
                 )
             } catch (e: NotAuthorizedException) {
-                throw BadRequestException("Invalid refresh token")
+                return@post call.respond(HttpStatusCode.Unauthorized)
             } catch (e: TokenExpiredException) {
-                throw BadRequestException("Refresh token expired")
+                return@post call.respond(HttpStatusCode.Unauthorized)
             }
 
             if (result.challengeName == null)

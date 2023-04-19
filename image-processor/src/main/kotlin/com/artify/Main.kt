@@ -35,7 +35,13 @@ suspend fun main() {
         .withRegion(Regions.EU_CENTRAL_1)
         .build()
 
-    val factory = ConnectionFactory()
+    val factory = ConnectionFactory().apply {
+        useSslProtocol()
+        host = System.getenv("RABBITMQ_HOST")
+        port = System.getenv("RABBITMQ_PORT").toInt()
+        username = System.getenv("RABBITMQ_USERNAME")
+        password = System.getenv("RABBITMQ_PASSWORD")
+    }
 
     withContext(Dispatchers.Default) {
         launch {

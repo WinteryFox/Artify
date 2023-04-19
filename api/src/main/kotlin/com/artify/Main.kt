@@ -63,8 +63,15 @@ fun Application.api() {
         .withRegion(Regions.EU_CENTRAL_1)
         .build()
 
-    val factory = ConnectionFactory()
-    val connection: Connection = factory.newConnection(System.getenv("RABBITMQ_HOST"))
+    val factory = ConnectionFactory().apply {
+        useSslProtocol()
+        host = environment.config.property("rabbitmq.host").getString()
+        port = environment.config.property("rabbitmq.port").getString().toInt()
+        username = environment.config.property("rabbitmq.username").getString()
+        password = environment.config.property("rabbitmq.password").getString()
+    }
+
+    val connection: Connection = factory.newConnection()
 
     Database.connect(HikariDataSource {
         driverClassName = "org.postgresql.Driver"
