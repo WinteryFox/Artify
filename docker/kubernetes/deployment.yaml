@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artify
+  labels:
+    app: artify
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: artify
+  template:
+    metadata:
+      labels:
+        environment: production
+        app: artify
+    spec:
+      containers:
+        - name: api
+          image: winteryfox/artify-api
+          ports:
+            - containerPort: 8080
+          env:
+
+
+#        - name: image-processor
+#          image: winteryfox/artify-image-processor
+
+#        - name: rabbitmq
+#          image: rabbitmq:3.11.13-management-alpine
+#          ports:
+#            - containerPort: 5672
+#            - containerPort: 15672
+#
+#        - name: postgres
+#          image: postgres:15.2-alpine
+#          ports:
+#            - containerPort: 5432
