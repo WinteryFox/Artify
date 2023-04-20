@@ -64,7 +64,8 @@ fun Application.api() {
         .build()
 
     val factory = ConnectionFactory().apply {
-        useSslProtocol()
+        if (environment.config.property("rabbitmq.ssl").getString().toBoolean())
+            useSslProtocol()
         host = environment.config.property("rabbitmq.host").getString()
         port = environment.config.property("rabbitmq.port").getString().toInt()
         username = environment.config.property("rabbitmq.username").getString()

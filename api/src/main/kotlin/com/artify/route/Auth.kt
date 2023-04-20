@@ -257,6 +257,8 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                 call.respond(HttpStatusCode.Unauthorized)
             } catch (e: ResourceNotFoundException) {
                 call.respond(HttpStatusCode.Unauthorized)
+            } catch (e: InvalidParameterException) {
+                call.respond(HttpStatusCode.Unauthorized)
             }
         }
     }
