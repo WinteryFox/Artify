@@ -12,18 +12,24 @@ fun Route.usersRoute() {
         authenticate {
             route("/@me") {
                 get {
-                    val user = getUser()
+                    val user = getSelf()
                     if (user != null)
                         call.respond(HttpStatusCode.OK, user.asResponse())
                     else
-                        call.respond(HttpStatusCode.Unauthorized) // TODO: Extra insert since the token *is* valid?
+                        call.respond(HttpStatusCode.NotFound) // TODO: Extra insert since the token *is* valid?
                 }
+            }
+
+            patch {
+                TODO()
             }
         }
 
         route("/{id}") {
             get {
-
+                getUser(call.parameters["id"]!!)?.asResponse()?.let {
+                    call.respond(HttpStatusCode.OK, it)
+                } ?: call.respond(HttpStatusCode.NotFound)
             }
         }
     }

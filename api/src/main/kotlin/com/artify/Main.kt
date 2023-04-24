@@ -25,6 +25,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
@@ -83,6 +84,15 @@ fun Application.api() {
         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
     })
 
+
+    install(CORS) {
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+        allowHeader(HttpHeaders.Authorization)
+        anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+    }
     install(AutoHeadResponse)
     install(ContentNegotiation) {
         json(Json {
@@ -113,11 +123,10 @@ fun Application.api() {
                 issuer
             )
             validate { credentials ->
-                // TODO: A lot of people seem to reference the audience but its not present in the tokens for this?
-                //if (credentials.payload.audience.contains(audience))
-                JWTPrincipal(credentials.payload)
-                //else
-                //    null
+                if (credentials.issuer == issuer)
+                    JWTPrincipal(credentials.payload)
+                else
+                    null
             }
         }
     }

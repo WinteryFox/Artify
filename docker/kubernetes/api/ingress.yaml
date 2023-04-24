@@ -4,6 +4,7 @@ metadata:
   name: api-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/proxy-body-size: 25m
 
 spec:
   ingressClassName: nginx

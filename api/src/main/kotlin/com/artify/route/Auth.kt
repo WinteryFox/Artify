@@ -5,6 +5,7 @@ import com.amazonaws.services.cognitoidp.model.*
 import com.artify.aws.DeviceHelper
 import com.artify.entity.Users
 import com.auth0.jwt.exceptions.TokenExpiredException
+import io.github.oshai.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -87,6 +88,7 @@ private fun secretHash(cognitoClientId: String, email: String?, secret: String):
 }
 
 fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
+    val logger = KotlinLogging.logger { }
     val cognitoPoolId = application.environment.config.property("aws.cognito.pool").getString()
     val cognitoClientId = application.environment.config.property("aws.cognito.client.id").getString()
     val cognitoClientSecret = application.environment.config.property("aws.cognito.client.secret").getString()
@@ -111,6 +113,11 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                 return@post call.respond(HttpStatusCode.Unauthorized)
             } catch (e: TokenExpiredException) {
                 return@post call.respond(HttpStatusCode.Unauthorized)
+            } catch (e: UserNotFoundException) {
+                return@post call.respond(HttpStatusCode.Unauthorized)
+            } catch (e: AWSCognitoIdentityProviderException) {
+                logger.catching(e)
+                return@post call.respond(HttpStatusCode.InternalServerError)
             }
 
             if (result.challengeName == null)
@@ -259,6 +266,9 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                 call.respond(HttpStatusCode.Unauthorized)
             } catch (e: InvalidParameterException) {
                 call.respond(HttpStatusCode.Unauthorized)
+            } catch (e: AWSCognitoIdentityProviderException) {
+                logger.catching(e)
+                return@post call.respond(HttpStatusCode.InternalServerError)
             }
         }
     }
@@ -313,10 +323,27 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
     }
 }
 
-fun PipelineContext<*, ApplicationCall>.getUser(): Users.Entity? {
+fun PipelineContext<*, ApplicationCall>.getSelf(): Users.Entity? {
     val principal = call.principal<JWTPrincipal>() ?: return null
+    val uuid = try {
+        UUID.fromString(principal.subject)
+    } catch (e: IllegalArgumentException) {
+        return null
+    }
 
     return transaction {
-        Users.Entity.findById(UUID.fromString(principal.subject))
+        Users.Entity.findById(uuid)
+    }
+}
+
+fun getUser(id: String): Users.Entity? {
+    val uuid = try {
+        UUID.fromString(id)
+    } catch (e: IllegalArgumentException) {
+        return null
+    }
+
+    return transaction {
+        Users.Entity.findById(uuid)
     }
 }

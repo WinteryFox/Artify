@@ -38,6 +38,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-request-validation:$ktor_version")
     implementation("io.ktor:ktor-server-status-pages:$ktor_version")
+    implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
 
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")

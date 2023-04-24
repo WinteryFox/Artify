@@ -5,7 +5,7 @@ metadata:
 
 spec:
   selector:
-    app: artify
+    app: api
   ports:
     - protocol: TCP
       port: 8080

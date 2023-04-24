@@ -21,8 +21,8 @@ CREATE TABLE media.illustrations
 (
     id               BIGINT  NOT NULL PRIMARY KEY,
     user_id          UUID    NOT NULL REFERENCES users (id),
-    title            TEXT    NOT NULL CHECK (length(title) > 0 AND length(title) < 100),
-    body             TEXT    NOT NULL CHECK (length(body) < 5000),
+    title            TEXT    NOT NULL CHECK (length(title) > 0 AND length(title) <= 100),
+    body             TEXT    NOT NULL CHECK (length(body) <= 5000),
     comments_enabled BOOLEAN NOT NULL,
     is_private       BOOLEAN NOT NULL,
     is_ai            BOOLEAN NOT NULL,

@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.artify.entity.Illustrations
 import com.artify.entity.Illustrations.Response.Companion.asResponse
+import com.artify.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
 import com.artify.entity.defaultSnowflakeGenerator
 import com.artify.image.ImageProcessorMessage
 import com.rabbitmq.client.AMQP
@@ -20,6 +21,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.apache.commons.codec.binary.Hex
 import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -36,7 +38,7 @@ fun Route.illustrationsRoute(
     route("/illustrations") {
         authenticate(optional = true) {
             get {
-                val user = getUser()
+                val user = getSelf()
 
                 val illustrations = if (user == null) {
                     transaction {
@@ -44,7 +46,7 @@ fun Route.illustrationsRoute(
                             .all()
                             .limit(50)
                             .orderBy(Illustrations.Table.id to SortOrder.DESC)
-                            .map { it.asResponse() }
+                            .map { it.asResponseWithAuthor() }
                     }
                 } else {
                     // TODO: Apply some kind of recommendation algorithm
@@ -53,7 +55,7 @@ fun Route.illustrationsRoute(
                             .all()
                             .limit(50)
                             .orderBy(Illustrations.Table.id to SortOrder.DESC)
-                            .map { it.asResponse() }
+                            .map { it.asResponseWithAuthor() }
                     }
                 }
 
@@ -63,7 +65,7 @@ fun Route.illustrationsRoute(
 
         authenticate {
             post<Illustrations.Post> { request ->
-                val user = getUser() ?: throw BadRequestException("Unknown user")
+                val user = getSelf() ?: throw BadRequestException("Unknown user")
 
                 // Process illustrations, put into bucket and dispatch RabbitMQ message for thumbnails
                 val images = request.illustrations.map { illustration ->
@@ -88,7 +90,7 @@ fun Route.illustrationsRoute(
                         val hash = Hex.encodeHexString(MessageDigest.getInstance("MD5").digest(data))
                         s3client.putObject(
                             "artify-com",
-                            "$hash/original",
+                            hash,
                             ByteArrayInputStream(bytes),
                             ObjectMetadata().apply {
                                 contentType = "image/png"
@@ -132,7 +134,7 @@ fun Route.illustrationsRoute(
                     Illustrations.Entity
                         .find { Illustrations.Table.id.eq(id) }
                         .singleOrNull()
-                        ?.asResponse()
+                        ?.asResponseWithAuthor()
                 }
 
                 if (result != null)
@@ -140,6 +142,27 @@ fun Route.illustrationsRoute(
                 else
                     call.respond(HttpStatusCode.NotFound)
             }
+        }
+    }
+
+    route("/users/{id}/illustrations") {
+        get {
+            val userId = try {
+                UUID.fromString(call.parameters["id"]
+                    ?.ifBlank { return@get call.respond(HttpStatusCode.NotFound) }
+                    ?: return@get call.respond(HttpStatusCode.NotFound))
+            } catch (e: IllegalArgumentException) {
+                return@get call.respond(HttpStatusCode.NotFound)
+            }
+
+            val illustrations = transaction {
+                Illustrations.Entity.find {
+                    Illustrations.Table.authorId.eq(userId)
+                        .and(Illustrations.Table.isPrivate.neq(true))
+                }.map { it.asResponse() }
+            }
+
+            call.respond(HttpStatusCode.OK, illustrations)
         }
     }
 }

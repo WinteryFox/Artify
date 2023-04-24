@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        environment: production
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: winteryfox/artify-api
+          ports:
+            - containerPort: 8080
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: HOST
+                  name: postgres
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: USERNAME
+                  name: postgres
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: PASSWORD
+                  name: postgres
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: ACCESS_KEY
+                  name: aws
+            - name: AWS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: SECRET_KEY
+                  name: aws
+            - name: AWS_COGNITO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: CLIENT_ID
+                  name: cognito
+            - name: AWS_COGNITO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: CLIENT_SECRET
+                  name: cognito
+            - name: AWS_COGNITO_POOL
+              valueFrom:
+                secretKeyRef:
+                  key: POOL_ID
+                  name: cognito
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: HOST
+                  name: rabbitmq
+            - name: RABBITMQ_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: PORT
+                  name: rabbitmq
+            - name: RABBITMQ_SSL
+              value: "false"
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: USERNAME
+                  name: rabbitmq
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: PASSWORD
+                  name: rabbitmq

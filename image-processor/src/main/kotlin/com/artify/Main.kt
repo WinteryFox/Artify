@@ -61,7 +61,7 @@ suspend fun main() {
                         logger.trace { "Generating scaled thumbnails for hash ${body.hash}" }
 
                         val blob = try {
-                            s3client.getObject("artify-com", "${body.hash}/original")
+                            s3client.getObject("artify-com", body.hash)
                         } catch (e: AmazonS3Exception) {
                             logger.error("Failed to fetch object ${body.hash}")
                             return@runBlocking

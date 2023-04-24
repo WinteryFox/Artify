@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-processor
+  labels:
+    app: image-processor
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: image-processor
+  template:
+    metadata:
+      labels:
+        environment: production
+        app: image-processor
+    spec:
+      containers:
+        - name: image-processor
+          image: winteryfox/artify-image-processor
+          env:
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: ACCESS_KEY
+                  name: aws
+            - name: AWS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: SECRET_KEY
+                  name: aws
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: HOST
+                  name: rabbitmq
+            - name: RABBITMQ_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: PORT
+                  name: rabbitmq
+            - name: RABBITMQ_SSL
+              value: "false"
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: USERNAME
+                  name: rabbitmq
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: PASSWORD
+                  name: rabbitmq
