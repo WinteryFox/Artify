@@ -1,5 +1,7 @@
-val kotlin_version: String  = "1.8.10"
-val ktor_version: String = "2.2.4"
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+val kotlin_version: String  = "1.8.21"
+val ktor_version: String = "2.3.0"
 
 plugins {
     `kotlin-dsl`
@@ -18,4 +20,10 @@ dependencies {
     implementation("com.google.cloud.tools", "jib-maven-plugin", "3.3.1")
     implementation(gradleApi())
     implementation(localGroovy())
+}
+
+allprojects {
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "19"
+    }
 }
