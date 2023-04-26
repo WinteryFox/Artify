@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 val kotlin_version: String  = "1.8.21"
 val ktor_version: String = "2.3.0"
 
@@ -23,7 +21,11 @@ dependencies {
 }
 
 allprojects {
-    tasks.withType<KotlinCompile> {
+    tasks.compileJava {
+        sourceCompatibility = "19"
+        targetCompatibility = "19"
+    }
+    tasks.compileKotlin {
         kotlinOptions.jvmTarget = "19"
     }
 }
