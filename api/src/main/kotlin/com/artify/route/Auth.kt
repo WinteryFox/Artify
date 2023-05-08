@@ -261,11 +261,11 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                     )
                 }
             } catch (e: NotAuthorizedException) {
-                call.respond(HttpStatusCode.Unauthorized)
+                return@post call.respond(HttpStatusCode.Unauthorized)
             } catch (e: ResourceNotFoundException) {
-                call.respond(HttpStatusCode.Unauthorized)
+                return@post call.respond(HttpStatusCode.Unauthorized)
             } catch (e: InvalidParameterException) {
-                call.respond(HttpStatusCode.Unauthorized)
+                return@post call.respond(HttpStatusCode.Unauthorized)
             } catch (e: AWSCognitoIdentityProviderException) {
                 logger.catching(e)
                 return@post call.respond(HttpStatusCode.InternalServerError)

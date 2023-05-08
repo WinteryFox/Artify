@@ -45,7 +45,7 @@ fun Route.assetsRoute(s3client: AmazonS3) {
                     return@get call.respond(HttpStatusCode.ServiceUnavailable)
                 }
 
-                call.response.header(HttpHeaders.CacheControl, "public,max-age=31536000,immutable")
+                call.response.cacheControl(CacheControl.MaxAge(31536000, visibility = CacheControl.Visibility.Public))
                 call.respondBytes(contentType, HttpStatusCode.OK) {
                     file.objectContent.use {
                         it.readAllBytes()

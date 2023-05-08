@@ -3,6 +3,7 @@ val jansi_version: String by project
 val amqp_version: String by project
 val kotlin_logging_version: String by project
 val aws_version: String by project
+val coroutines_version: String by project
 
 plugins {
     kotlin("jvm")
@@ -21,7 +22,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.github.oshai:kotlin-logging-jvm:$kotlin_logging_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
