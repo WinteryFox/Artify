@@ -2,6 +2,8 @@ package com.artify.route
 
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.*
+import com.artify.Code
+import com.artify.ExceptionWithStatusCode
 import com.artify.aws.DeviceHelper
 import com.artify.entity.Users
 import com.auth0.jwt.exceptions.TokenExpiredException
@@ -10,7 +12,6 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -261,11 +262,13 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                     )
                 }
             } catch (e: NotAuthorizedException) {
-                return@post call.respond(HttpStatusCode.Unauthorized)
+                throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.BadCredentials)
+            } catch (e: UserNotConfirmedException) {
+                throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.ConfirmEmail)
             } catch (e: ResourceNotFoundException) {
-                return@post call.respond(HttpStatusCode.Unauthorized)
+                return@post call.respond(HttpStatusCode.InternalServerError)
             } catch (e: InvalidParameterException) {
-                return@post call.respond(HttpStatusCode.Unauthorized)
+                return@post call.respond(HttpStatusCode.InternalServerError)
             } catch (e: AWSCognitoIdentityProviderException) {
                 logger.catching(e)
                 return@post call.respond(HttpStatusCode.InternalServerError)
@@ -284,9 +287,9 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                         .withSecretHash(secretHash(cognitoClientId, request.email, cognitoClientSecret))
                 )
             } catch (e: InvalidPasswordException) {
-                throw BadRequestException("Invalid password")
+                throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.InvalidPassword)
             } catch (e: UsernameExistsException) {
-                throw BadRequestException("Email is taken")
+                throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.EmailTaken)
             }
 
             transaction {
@@ -310,11 +313,11 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                             .withSecretHash(secretHash(cognitoClientId, request.email, cognitoClientSecret))
                     )
                 } catch (e: UserNotFoundException) {
-                    throw BadRequestException("Email is not registered")
+                    throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.UnknownEmail)
                 } catch (e: CodeMismatchException) {
-                    throw BadRequestException("Code is invalid")
+                    throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.InvalidCode)
                 } catch (e: ExpiredCodeException) {
-                    throw BadRequestException("Code is expired")
+                    throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.ExpiredCode)
                 }
 
                 call.respond(HttpStatusCode.OK)

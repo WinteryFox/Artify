@@ -17,6 +17,7 @@ import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.github.oshai.KotlinLogging
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -39,6 +40,8 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @Suppress("unused")
 fun Application.api() {
+    val logger = KotlinLogging.logger { }
+
     val s3client: AmazonS3 = AmazonS3ClientBuilder
         .standard()
         .withCredentials(
@@ -87,12 +90,17 @@ fun Application.api() {
 
     install(DefaultHeaders)
     install(CORS) {
+        allowCredentials = true
+        allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Get)
         allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Head)
         allowHeader(HttpHeaders.AccessControlAllowHeaders)
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
-        allowHeader(HttpHeaders.Cookie)
+        allowHeader(HttpHeaders.Authorization)
         anyHost()
     }
     install(AutoHeadResponse)
@@ -110,10 +118,17 @@ fun Application.api() {
         exception<RequestValidationException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, cause.reasons.joinToString())
         }
+
+        exception<ExceptionWithStatusCode> { call, cause ->
+            if (cause.cause != null)
+                logger.catching(cause.cause!!)
+
+            call.respond(cause.status, cause.code)
+        }
     }
     install(Authentication) {
         jwt {
-            this@api.environment.config.property("aws.cognito.client.id").getString()
+            realm = this@api.environment.config.property("aws.cognito.client.id").getString()
             val issuer = this@api.environment.config.property("aws.cognito.issuer").getString()
             val provider = JwkProviderBuilder(issuer)
                 .cached(10, 24, TimeUnit.HOURS)
