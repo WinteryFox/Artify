@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'api/**'
+      - 'buildSrc/**'
       - '.github/workflows/api.yml'
     branches: [ master ]
     tags-ignore:

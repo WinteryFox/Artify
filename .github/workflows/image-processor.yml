@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'image-processor/**'
+      - 'buildSrc/**'
       - '.github/workflows/image-processor.yml'
     branches: [ master ]
     tags-ignore:
