@@ -1,4 +1,4 @@
-val kotlin_version: String  = "1.8.21"
+val kotlin_version: String = "1.8.21"
 val ktor_version: String = "2.3.0"
 
 plugins {
@@ -20,12 +20,10 @@ dependencies {
     implementation(localGroovy())
 }
 
-allprojects {
-    tasks.compileJava {
-        sourceCompatibility = "19"
-        targetCompatibility = "19"
-    }
-    tasks.compileKotlin {
-        kotlinOptions.jvmTarget = "19"
-    }
+tasks.compileJava {
+    sourceCompatibility = "19"
+    targetCompatibility = "19"
+}
+tasks.compileKotlin {
+    kotlinOptions.jvmTarget = "19"
 }
