@@ -19,11 +19,3 @@ dependencies {
     implementation(gradleApi())
     implementation(localGroovy())
 }
-
-tasks.compileJava {
-    sourceCompatibility = "19"
-    targetCompatibility = "19"
-}
-tasks.compileKotlin {
-    kotlinOptions.jvmTarget = "19"
-}
