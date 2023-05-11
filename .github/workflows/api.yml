@@ -5,6 +5,7 @@ on:
     paths:
       - 'api/**'
       - 'buildSrc/**'
+      - 'gradle/**'
       - '.github/workflows/api.yml'
     branches: [ master ]
     tags-ignore:

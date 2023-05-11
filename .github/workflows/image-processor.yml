@@ -5,6 +5,7 @@ on:
     paths:
       - 'image-processor/**'
       - 'buildSrc/**'
+      - 'gradle/**'
       - '.github/workflows/image-processor.yml'
     branches: [ master ]
     tags-ignore:
