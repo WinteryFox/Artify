@@ -4,7 +4,7 @@ import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Code(
+open class Code(
     @Suppress("unused")
     val code: Int,
     val message: String
