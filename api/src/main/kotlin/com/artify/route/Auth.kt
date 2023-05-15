@@ -261,13 +261,17 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                         )
                     )
                 }
-            } catch (e: NotAuthorizedException) {
+            } catch (_: InvalidParameterException) {
                 throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.BadCredentials)
-            } catch (e: UserNotConfirmedException) {
+            } catch (e: NotAuthorizedException) {
+                when (e.errorMessage) {
+                    "User is disabled." -> throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.AccountDisabled)
+                    else -> throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.BadCredentials)
+                }
+            } catch (_: UserNotConfirmedException) {
                 throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.ConfirmEmail)
             } catch (e: ResourceNotFoundException) {
-                return@post call.respond(HttpStatusCode.InternalServerError)
-            } catch (e: InvalidParameterException) {
+                logger.catching(e)
                 return@post call.respond(HttpStatusCode.InternalServerError)
             } catch (e: AWSCognitoIdentityProviderException) {
                 logger.catching(e)

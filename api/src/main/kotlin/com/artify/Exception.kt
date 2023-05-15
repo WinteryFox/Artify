@@ -22,6 +22,8 @@ open class Code(
     object InvalidCode : Code(105, "Code is invalid")
 
     object ExpiredCode : Code(106, "Code is expired")
+
+    object AccountDisabled : Code(107, "Account is disabled")
 }
 
 class ExceptionWithStatusCode(
