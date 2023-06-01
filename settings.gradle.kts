@@ -1,4 +1,5 @@
 rootProject.name = "Artify"
-include(":json")
+include(":core")
 include(":api")
 include(":image-processor")
+include(":recommendation-processor")

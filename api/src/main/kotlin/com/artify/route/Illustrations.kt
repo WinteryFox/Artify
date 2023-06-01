@@ -6,7 +6,8 @@ import com.artify.entity.Illustrations
 import com.artify.entity.Illustrations.Response.Companion.asResponse
 import com.artify.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
 import com.artify.entity.defaultSnowflakeGenerator
-import com.artify.image.ImageProcessorMessage
+import com.artify.json.message.ImageProcessorMessage
+import com.artify.json.message.LikeMessage
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.MessageProperties
@@ -16,6 +17,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.pipeline.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -123,12 +125,7 @@ fun Route.illustrationsRoute(
 
         route("/{id}") {
             get {
-                val id = try {
-                    call.parameters["id"]?.toLong()
-                        ?: return@get call.respond(HttpStatusCode.NotFound)
-                } catch (e: NumberFormatException) {
-                    return@get call.respond(HttpStatusCode.NotFound)
-                }
+                val id = parseId() ?: return@get call.respond(HttpStatusCode.NotFound)
 
                 val result = transaction {
                     Illustrations.Entity
@@ -141,6 +138,38 @@ fun Route.illustrationsRoute(
                     call.respond(HttpStatusCode.OK, result)
                 else
                     call.respond(HttpStatusCode.NotFound)
+            }
+
+            route("/like") {
+                authenticate {
+                    put {
+                        val user = getSelf() ?: throw BadRequestException("Unknown user")
+                        val id = parseId() ?: return@put call.respond(HttpStatusCode.NotFound)
+
+                        // TODO: Insert into db
+
+                        amqpConnection.createChannel().use { channel ->
+                            channel.queueDeclare("like_queue", true, false, false, null)
+                            channel.basicPublish(
+                                "",
+                                "like_queue",
+                                AMQP.BasicProperties.Builder()
+                                    .deliveryMode(MessageProperties.PERSISTENT_BASIC.deliveryMode).build(),
+                                Json.encodeToString(LikeMessage(user.id.value.toString(), id)).toByteArray()
+                            )
+                        }
+
+                        call.respond(HttpStatusCode.OK)
+                    }
+
+                    delete {
+                        val id = parseId() ?: return@delete call.respond(HttpStatusCode.NotFound)
+
+                        // TODO: Delete from db
+
+                        call.respond(HttpStatusCode.OK)
+                    }
+                }
             }
         }
     }
@@ -167,37 +196,46 @@ fun Route.illustrationsRoute(
     }
 }
 
+private fun PipelineContext<Unit, ApplicationCall>.parseId(): Long? {
+    return try {
+        call.parameters["id"]?.toLong()
+    } catch (e: NumberFormatException) {
+        null
+    }
+}
+
 private suspend fun dispatchImageProcessingMessage(amqpConnection: Connection, hash: String, image: BufferedImage) {
     withContext(Dispatchers.IO) {
-        val channel = amqpConnection.createChannel()
-        channel.queueDeclare("scaling_queue", true, false, false, null)
+        amqpConnection.createChannel().use { channel ->
+            channel.queueDeclare("scaling_queue", true, false, false, null)
 
-        val cropWidth = if (image.width < image.height) image.width else image.height
-        val cropHeight = if (image.height < image.width) image.height else image.width
-        val cropPosition = ImageProcessorMessage.Dimension(
-            (image.width / 2) - (cropWidth / 2),
-            (image.height / 2) - (cropHeight / 2)
-        )
-        val cropSize = ImageProcessorMessage.Dimension(cropWidth, cropHeight)
-        val scales = listOf(
-            ImageProcessorMessage.Dimension(512, 512),
-            ImageProcessorMessage.Dimension(256, 256),
-            ImageProcessorMessage.Dimension(128, 128)
-        ).filter { it.x < cropWidth && it.y < cropHeight }.toSet()
+            val cropWidth = if (image.width < image.height) image.width else image.height
+            val cropHeight = if (image.height < image.width) image.height else image.width
+            val cropPosition = ImageProcessorMessage.Dimension(
+                (image.width / 2) - (cropWidth / 2),
+                (image.height / 2) - (cropHeight / 2)
+            )
+            val cropSize = ImageProcessorMessage.Dimension(cropWidth, cropHeight)
+            val scales = listOf(
+                ImageProcessorMessage.Dimension(512, 512),
+                ImageProcessorMessage.Dimension(256, 256),
+                ImageProcessorMessage.Dimension(128, 128)
+            ).filter { it.x < cropWidth && it.y < cropHeight }.toSet()
 
-        channel.basicPublish(
-            "",
-            "scaling_queue",
-            AMQP.BasicProperties.Builder()
-                .deliveryMode(MessageProperties.PERSISTENT_BASIC.deliveryMode).build(),
-            Json.encodeToString(
-                ImageProcessorMessage(
-                    hash,
-                    cropPosition,
-                    cropSize,
-                    scales
-                )
-            ).toByteArray()
-        )
+            channel.basicPublish(
+                "",
+                "scaling_queue",
+                AMQP.BasicProperties.Builder()
+                    .deliveryMode(MessageProperties.PERSISTENT_BASIC.deliveryMode).build(),
+                Json.encodeToString(
+                    ImageProcessorMessage(
+                        hash,
+                        cropPosition,
+                        cropSize,
+                        scales
+                    )
+                ).toByteArray()
+            )
+        }
     }
 }

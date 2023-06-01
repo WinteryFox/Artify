@@ -294,6 +294,8 @@ fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
                 throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.InvalidPassword)
             } catch (e: UsernameExistsException) {
                 throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.EmailTaken)
+            } catch (e: InvalidParameterException) {
+                throw ExceptionWithStatusCode(HttpStatusCode.BadRequest, Code.InvalidPassword)
             }
 
             transaction {
