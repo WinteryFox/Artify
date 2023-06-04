@@ -94,7 +94,7 @@ jobs:
         id: login
 
       - name: Deploy application
-        uses: azure/k8s-deploy
+        uses: azure/k8s-deploy@v4
         with:
           manifest: ./docker/kubernetes
           action: deploy
