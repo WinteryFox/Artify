@@ -1,5 +1,5 @@
 val kotlin_version: String = "1.8.21"
-val ktor_version: String = "2.3.0"
+val ktor_version: String = "2.3.1"
 
 plugins {
     `kotlin-dsl`
