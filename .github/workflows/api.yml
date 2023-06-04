@@ -69,7 +69,7 @@ jobs:
       - name: Build and push image
         env:
           IMAGE_TAG: ${{ github.sha }}
-        run: ./gradlew api:jib -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} -Djib.to.auth.password=${{ secrets.DOCKER_ACCESS_TOKEN }}
+        run: ./gradlew api:jib -Djib.to.image=winteryfox/artify-api -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} -Djib.to.auth.password=${{ secrets.DOCKER_ACCESS_TOKEN }}
 
   deploy:
     name: Deploy to Kubernetes cluster
