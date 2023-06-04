@@ -66,30 +66,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
-
-      - name: Login to ECR
-        id: login_ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build image and push to ECR
+      - name: Build and push image
         env:
-          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-        run: ./gradlew api:jib -Djib.to.credHelper=ecr-login -Djib.to.image=$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
+        run: ./gradlew api:jib -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} -Djib.to.auth.password=${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-#  deploy:
-#    name: Deploy to EKS
-#    runs-on: ubuntu-latest
-#    if: github.event_name != 'pull_request'
-#    needs: publish
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
+  deploy:
+    name: Deploy to Kubernetes cluster
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    needs: publish
 
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get Kubernetes context
+        uses: azure/aks-set-context@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          resource-group: artify
+          cluster-name: artify
+        id: login
+
+      - name: Deploy application
+        uses: azure/k8s-deploy
+        with:
+          manifest: ./docker/kubernetes
+          action: deploy
+          strategy: basic
