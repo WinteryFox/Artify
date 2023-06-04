@@ -74,11 +74,14 @@ jobs:
           aws-region: eu-central-1
 
       - name: Login to ECR
-        id: login-acr
+        id: login_ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build image and push to ECR
-        run: ./gradlew api:jib -Djib.to.credHelper=ecr-login
+        env:
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: ./gradlew api:jib -Djib.to.credHelper=ecr-login -Djib.to.image=$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG
 
 #  deploy:
 #    name: Deploy to EKS
