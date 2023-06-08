@@ -35,6 +35,11 @@ spec:
                 secretKeyRef:
                   key: HOST
                   name: rabbitmq
+            - name: RABBITMQ_VHOST
+              valueFrom:
+                secretKeyRef:
+                  key: VHOST
+                  name: rabbitmq
             - name: RABBITMQ_PORT
               valueFrom:
                 secretKeyRef:

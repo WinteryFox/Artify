@@ -69,6 +69,7 @@ fun Application.api() {
         if (environment.config.property("rabbitmq.ssl").getString().toBoolean())
             useSslProtocol()
         host = environment.config.property("rabbitmq.host").getString()
+        virtualHost = environment.config.property("rabbitmq.vhost").getString()
         port = environment.config.property("rabbitmq.port").getString().toInt()
         username = environment.config.property("rabbitmq.username").getString()
         password = environment.config.property("rabbitmq.password").getString()

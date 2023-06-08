@@ -36,8 +36,10 @@ suspend fun main() {
         .build()
 
     val factory = ConnectionFactory().apply {
-        useSslProtocol()
+        if (System.getenv("RABBITMQ_SSL").toBoolean())
+            useSslProtocol()
         host = System.getenv("RABBITMQ_HOST")
+        virtualHost = System.getenv("RABBITMQ_VHOST")
         port = System.getenv("RABBITMQ_PORT").toInt()
         username = System.getenv("RABBITMQ_USERNAME")
         password = System.getenv("RABBITMQ_PASSWORD")
