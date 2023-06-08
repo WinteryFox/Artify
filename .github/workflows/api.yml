@@ -111,7 +111,6 @@ jobs:
         with:
           resource-group: artify
           cluster-name: artify
-        id: login
 
       - name: Deploy application
         uses: azure/k8s-deploy@v4
@@ -119,3 +118,4 @@ jobs:
           manifests: ./docker/kubernetes/api
           action: deploy
           strategy: basic
+          pull-images: false
