@@ -7,6 +7,7 @@ on:
       - 'buildSrc/**'
       - 'gradle/**'
       - '.github/workflows/image-processor.yml'
+      - 'docker/kubernetes/image-processor/*.yaml'
     branches: [ master ]
     tags-ignore:
       - '*.*'
