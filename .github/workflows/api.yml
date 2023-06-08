@@ -89,5 +89,35 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Publish to Docker Hub
-        run: ./gradlew api:jib -Djib.to.auth.username=${{secrets.DOCKER_USERNAME}} -Djib.to.auth.password=${{secrets.DOCKER_ACCESS_TOKEN}}
+      - name: Build and push image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: ./gradlew api:jib -Djib.to.image=winteryfox/artify-api -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} -Djib.to.auth.password=${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+  deploy:
+    name: Deploy to Kubernetes cluster
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    needs: publish
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get Kubernetes context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: artify
+          cluster-name: artify
+        id: login
+
+      - name: Deploy application
+        uses: azure/k8s-deploy@v4
+        with:
+          manifests: ./docker/kubernetes/api
+          action: deploy
+          strategy: basic
