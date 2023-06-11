@@ -5,13 +5,15 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-fun hash(vararg input: String, algorithm: String = "SHA-256"): ByteArray =
+const val hashingAlgorithm: String = "SHA-256"
+
+fun hash(vararg input: String, algorithm: String = hashingAlgorithm): ByteArray =
     hash(input.map { it.toByteArray() }, algorithm)
 
-fun hash(vararg input: ByteArray, algorithm: String = "SHA-256"): ByteArray =
+fun hash(vararg input: ByteArray, algorithm: String = hashingAlgorithm): ByteArray =
     hash(input.toList(), algorithm)
 
-fun hash(input: List<ByteArray>, algorithm: String = "SHA-256"): ByteArray {
+fun hash(input: List<ByteArray>, algorithm: String = hashingAlgorithm): ByteArray {
     val digest = MessageDigest.getInstance(algorithm)
     for (i in input)
         digest.update(i)
@@ -36,5 +38,12 @@ fun hmac(key: ByteArray, input: List<ByteArray>, algorithm: String = "HmacSHA256
     return mac.doFinal()
 }
 
-fun secretHash(cognitoClientId: String, email: String, secret: String): String =
-    Base64.getEncoder().encodeToString(hmac(secret.toByteArray(), email, cognitoClientId))
+fun secretHash(cognitoClientId: String, email: String?, secret: String): String {
+    val signingKey = SecretKeySpec(secret.toByteArray(), "HmacSHA256")
+    val mac = Mac.getInstance("HmacSHA256")
+    mac.init(signingKey)
+    if (email != null)
+        mac.update(email.toByteArray())
+
+    return Base64.getEncoder().encodeToString(mac.doFinal(cognitoClientId.toByteArray()))
+}

@@ -167,8 +167,13 @@ fun Route.illustrationsRoute(
     }
 }
 
-private suspend fun dispatchImageProcessingMessage(amqpConnection: Connection, hash: String, image: BufferedImage) {
-    withContext(Dispatchers.IO) {
+private suspend fun dispatchImageProcessingMessage(
+    amqpConnection: Connection,
+    hash: String,
+    image: BufferedImage,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO
+) {
+    withContext(dispatcher) {
         val channel = amqpConnection.createChannel()
         channel.queueDeclare("scaling_queue", true, false, false, null)
 

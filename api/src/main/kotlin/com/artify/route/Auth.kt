@@ -5,6 +5,7 @@ import com.amazonaws.services.cognitoidp.model.*
 import com.artify.Code
 import com.artify.ExceptionWithStatusCode
 import com.artify.aws.DeviceHelper
+import com.artify.aws.secretHash
 import com.artify.entity.Users
 import com.auth0.jwt.exceptions.TokenExpiredException
 import io.github.oshai.KotlinLogging
@@ -21,8 +22,6 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 
 @Serializable
 data class Login(
@@ -77,16 +76,6 @@ data class Verify(
     val email: String,
     val code: String
 )
-
-private fun secretHash(cognitoClientId: String, email: String?, secret: String): String {
-    val signingKey = SecretKeySpec(secret.toByteArray(), "HmacSHA256")
-    val mac = Mac.getInstance("HmacSHA256")
-    mac.init(signingKey)
-    if (email != null)
-        mac.update(email.toByteArray())
-
-    return Base64.getEncoder().encodeToString(mac.doFinal(cognitoClientId.toByteArray()))
-}
 
 fun Route.authRoute(provider: AWSCognitoIdentityProvider) {
     val logger = KotlinLogging.logger { }

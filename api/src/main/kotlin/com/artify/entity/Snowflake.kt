@@ -20,8 +20,9 @@ class SnowflakeGenerator(
     }
 
     init {
-        if (machineId >= MAX_MACHINE_ID || machineId < 0)
-            throw IllegalArgumentException("Machine Number must between 0 - ${MAX_MACHINE_ID - 1}")
+        require(machineId < MAX_MACHINE_ID || machineId >= 0) {
+            "Machine Number must between 0 - ${MAX_MACHINE_ID - 1}"
+        }
     }
 
     fun nextId(): Snowflake {

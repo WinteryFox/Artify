@@ -26,7 +26,7 @@ class DeviceHelper(
     private val deviceKey: String,
     private val deviceGroupKey: String
 ) {
-    private val N: BigInteger = BigInteger(HEX_N, 16)
+    private val bigN: BigInteger = BigInteger(HEX_N, 16)
 
     private val g: BigInteger = BigInteger(HEX_G, 16)
 
@@ -34,25 +34,24 @@ class DeviceHelper(
 
     private val a: BigInteger
 
-    private val A: BigInteger
+    private val bigA: BigInteger
 
     init {
         val digest = MessageDigest.getInstance("SHA-256")
-        digest.update(N.toByteArray())
+        digest.update(bigN.toByteArray())
 
         var tempa: BigInteger
         var tempA: BigInteger
 
         do {
-            tempa = BigInteger(1024, SECURE_RANDOM).mod(N)
-            tempA = g.modPow(tempa, N)
-        } while (tempA.mod(N) == BigInteger.ZERO)
+            tempa = BigInteger(1024, SECURE_RANDOM).mod(bigN)
+            tempA = g.modPow(tempa, bigN)
+        } while (tempA.mod(bigN) == BigInteger.ZERO)
 
         a = tempa
-        A = tempA
+        bigA = tempA
 
-        // k = SHA256_HASH(N + g)
-        k = BigInteger(1, hash(N.toByteArray(), g.toByteArray()))
+        k = BigInteger(1, hash(bigN.toByteArray(), g.toByteArray()))
     }
 
     fun passwordClaimSignature(
@@ -62,28 +61,22 @@ class DeviceHelper(
         timestamp: String,
         secretBlock: String
     ): String {
-        // FULL_PASSWORD = SHA256_HASH(DeviceGroupKey + DeviceKey + ":" + DevicePassword)
         val fullPassword = hash(deviceGroupKey, deviceKey, ":", devicePassword)
 
-        val B = BigInteger(srpB, 16)
+        val bigB = BigInteger(srpB, 16)
         val salt = BigInteger(srpSalt, 16)
 
-        if (B.mod(N) == BigInteger.ZERO)
+        if (bigB.mod(bigN) == BigInteger.ZERO)
             throw RuntimeException("Bad server B")
 
-        // u = SHA256_HASH(SRP_A + SRP_B)
-        //val u = BigInteger(1, hash(A.add(B).toByteArray()))
-        val u = BigInteger(1, hash(A.toByteArray(), B.toByteArray()))
-        if (u.mod(N) == BigInteger.ZERO)
+        val u = BigInteger(1, hash(bigA.toByteArray(), bigB.toByteArray()))
+        if (u.mod(bigN) == BigInteger.ZERO)
             throw RuntimeException("Hash of A and B cannot be zero")
 
-        // x = SHA256_HASH(salt + FULL_PASSWORD)
         val x = BigInteger(1, hash(salt.toByteArray(), fullPassword))
 
-        // S_USER = [ ( SRP_B - [ k * [ (gx) (mod N) ] ] )(a + ux) ](mod N)
-        val S = (B.subtract(k.multiply(g.modPow(x, N))).modPow(a.add(u.multiply(x)), N)).mod(N)
-        // K_USER = SHA256_HASH(S_USER)
-        val prk = hmac(u.toByteArray(), S.toByteArray())
+        val bigS = (bigB.subtract(k.multiply(g.modPow(x, bigN))).modPow(a.add(u.multiply(x)), bigN)).mod(bigN)
+        val prk = hmac(u.toByteArray(), bigS.toByteArray())
         val hkdf = hmac(prk, DERIVED_KEY_INFO, Char(1).toString()).copyOf(DERIVED_KEY_SIZE)
 
         val signature = hmac(
@@ -97,15 +90,13 @@ class DeviceHelper(
         return Base64.getEncoder().encodeToString(signature)
     }
 
-    fun srpA(): String = Hex.encodeHexString(A.toByteArray())
+    fun srpA(): String = Hex.encodeHexString(bigA.toByteArray())
 
     fun passwordVerifierConfig(): PasswordVerifier {
-        // RANDOM_PASSWORD = 40 random bytes, base64-encoded
         var randomPassword = ByteArray(40)
         SECURE_RANDOM.nextBytes(randomPassword)
         randomPassword = Base64.getEncoder().encode(randomPassword)
 
-        // FULL_PASSWORD = SHA256_HASH(DeviceGroupKey + DeviceKey + ":" + RANDOM_PASSWORD)
         val fullPassword =
             hash(deviceGroupKey.toByteArray(), deviceKey.toByteArray(), ":".toByteArray(), randomPassword)
 
@@ -113,7 +104,7 @@ class DeviceHelper(
         SECURE_RANDOM.nextBytes(salt)
 
         val x = BigInteger(1, hash(salt, fullPassword))
-        val verifier = g.modPow(x, N)
+        val verifier = g.modPow(x, bigN)
 
         return PasswordVerifier(
             randomPassword.toString(Charset.forName("UTF-8")),

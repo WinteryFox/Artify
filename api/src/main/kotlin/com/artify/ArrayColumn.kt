@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.statements.jdbc.JdbcPreparedStatementImpl
 import org.jetbrains.exposed.sql.stringLiteral
 import org.jetbrains.exposed.sql.vendors.currentDialect
 import java.io.Serializable
-import kotlin.Array
 import java.sql.Array as SQLArray
 
 /**
@@ -20,7 +19,7 @@ import java.sql.Array as SQLArray
  *
  * @param size an optional size of the array
  */
-public fun Table.textArray(name: String, size: Int? = null): Column<Array<String>> =
+fun Table.textArray(name: String, size: Int? = null): Column<Array<String>> =
     array(name, currentDialect.dataTypeProvider.textType(), size)
 
 private fun <T : Serializable> Table.array(name: String, underlyingType: String, size: Int?) =
@@ -36,13 +35,13 @@ private fun <T : Serializable> Table.array(name: String, underlyingType: String,
  *
  * @see any
  */
-public infix fun String.equalsAny(other: Expression<Array<String>>): EqOp =
+infix fun String.equalsAny(other: Expression<Array<String>>): EqOp =
     stringLiteral(this) eqAny other
 
 /**
  * Invokes the `ANY` function on [expression].
  */
-public fun <T : Serializable> any(
+fun <T : Serializable> any(
     expression: Expression<Array<T>>,
 ): ExpressionWithColumnType<String?> = CustomStringFunction("ANY", expression)
 
@@ -54,7 +53,7 @@ private infix fun <T : Serializable> Expression<T>.eqAny(other: Expression<Array
  * @property underlyingType the type of the array
  * @property size an optional size of the array
  */
-public class ArrayColumnType<T : Serializable>(
+class ArrayColumnType<T : Serializable>(
     private val underlyingType: String, private val size: Int?
 ) : ColumnType() {
     override fun sqlType(): String = "$underlyingType ARRAY${size?.let { "[$it]" } ?: ""}"
