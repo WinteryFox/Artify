@@ -1,4 +1,4 @@
-package com.artify.image
+package com.artify.json.message
 
 import kotlinx.serialization.Serializable
 

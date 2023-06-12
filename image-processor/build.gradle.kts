@@ -29,7 +29,7 @@ dependencies {
     implementation("com.rabbitmq:amqp-client:$amqp_version")
     implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
 
-    implementation(project(mapOf("path" to ":json")))
+    implementation(project(mapOf("path" to ":core")))
 
     runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
     runtimeOnly("ch.qos.logback:logback-classic:$logback_version")

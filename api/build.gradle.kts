@@ -47,7 +47,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
 
-    implementation(project(mapOf("path" to ":json")))
+    implementation(project(mapOf("path" to ":core")))
 
     implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
     implementation("com.amazonaws:aws-java-sdk-cognitoidp:$aws_version")

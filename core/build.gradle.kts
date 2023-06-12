@@ -9,7 +9,7 @@ plugins {
     sources
 }
 
-description = "The shared data classes for Artify"
+description = "The core for Artify"
 
 repositories {
     mavenCentral()

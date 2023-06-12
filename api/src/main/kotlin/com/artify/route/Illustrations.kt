@@ -6,7 +6,7 @@ import com.artify.entity.Illustrations
 import com.artify.entity.Illustrations.Response.Companion.asResponse
 import com.artify.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
 import com.artify.entity.defaultSnowflakeGenerator
-import com.artify.image.ImageProcessorMessage
+import com.artify.json.message.ImageProcessorMessage
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.MessageProperties
