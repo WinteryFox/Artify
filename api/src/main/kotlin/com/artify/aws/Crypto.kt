@@ -5,7 +5,8 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-const val hashingAlgorithm: String = "SHA-256"
+private const val hashingAlgorithm: String = "SHA-256"
+private const val hmacAlgorithm: String = "HmacSHA256"
 
 fun hash(vararg input: String, algorithm: String = hashingAlgorithm): ByteArray =
     hash(input.map { it.toByteArray() }, algorithm)
@@ -21,13 +22,13 @@ fun hash(input: List<ByteArray>, algorithm: String = hashingAlgorithm): ByteArra
     return digest.digest()
 }
 
-fun hmac(key: ByteArray, vararg input: String, algorithm: String = "HmacSHA256"): ByteArray =
+fun hmac(key: ByteArray, vararg input: String, algorithm: String = hmacAlgorithm): ByteArray =
     hmac(key, input.map { it.toByteArray() }, algorithm)
 
-fun hmac(key: ByteArray, vararg input: ByteArray, algorithm: String = "HmacSHA256"): ByteArray =
+fun hmac(key: ByteArray, vararg input: ByteArray, algorithm: String = hmacAlgorithm): ByteArray =
     hmac(key, input.toList(), algorithm)
 
-fun hmac(key: ByteArray, input: List<ByteArray>, algorithm: String = "HmacSHA256"): ByteArray {
+fun hmac(key: ByteArray, input: List<ByteArray>, algorithm: String = hmacAlgorithm): ByteArray {
     val keySpec = SecretKeySpec(key, algorithm)
     val mac = Mac.getInstance(algorithm)
     mac.init(keySpec)
