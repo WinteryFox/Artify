@@ -54,13 +54,13 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-    runtimeOnly("org.postgresql:postgresql:42.5.4")
+    runtimeOnly("org.postgresql:postgresql:42.6.0")
     runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
     runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
 
     testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
