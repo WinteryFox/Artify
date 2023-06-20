@@ -7,7 +7,6 @@ on:
       - 'api/**'
       - 'image-processor/**'
       - '.github/workflows/sca.yml'
-      - 'gradle/**'
     branches: [ master ]
     tags-ignore:
       - '*.*'
