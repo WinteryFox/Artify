@@ -13,8 +13,6 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("io.ktor.plugin")
-    id("com.github.johnrengelman.shadow")
-    id("org.sonarqube") version "4.2.0.3129"
     sources
 }
 
@@ -87,12 +85,4 @@ jib {
         tags = setOf(project.version.toString())
     }
     from.image = "amazoncorretto:19-alpine"
-}
-
-sonarqube {
-    properties {
-        property("sonar.projectKey", "WinteryFox_Artify")
-        property("sonar.organization", "winteryfox")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
 }

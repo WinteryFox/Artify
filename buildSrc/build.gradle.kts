@@ -13,9 +13,9 @@ repositories {
 dependencies {
     implementation(kotlin("gradle-plugin", version = kotlin_version))
     implementation(kotlin("serialization", version = kotlin_version))
-    implementation("com.github.johnrengelman.shadow", "com.github.johnrengelman.shadow.gradle.plugin", "7.1.2")
     implementation("io.ktor.plugin", "plugin", ktor_version)
     implementation("com.google.cloud.tools", "jib-maven-plugin", "3.3.2")
+    implementation("org.sonarsource.scanner.gradle", "sonarqube-gradle-plugin", "4.2.1.3168")
     implementation(gradleApi())
     implementation(localGroovy())
 }

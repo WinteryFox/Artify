@@ -9,7 +9,6 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("com.google.cloud.tools.jib")
-    id("com.github.johnrengelman.shadow")
     sources
 }
 
