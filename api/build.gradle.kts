@@ -14,7 +14,7 @@ plugins {
     kotlin("plugin.serialization")
     id("io.ktor.plugin")
     id("com.github.johnrengelman.shadow")
-    id("org.sonarqube") version "4.2.0.3129"
+    id("org.sonarqube") version "4.2.1.3168"
     sources
 }
 
