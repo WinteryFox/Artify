@@ -1,4 +1,4 @@
-name: Api
+name: Static Code Analysis
 
 on:
   push:
@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    name: Build for JDK ${{ matrix.java }}
+    name: Analyse projects
     runs-on: ubuntu-latest
 
     strategy:
@@ -50,4 +50,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew api:sonarqube --info
+        run: ./gradlew sonarqube --info
