@@ -8,7 +8,6 @@ val coroutines_version: String by project
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("com.google.cloud.tools.jib")
     sources
 }
 

@@ -81,8 +81,6 @@ tasks.test {
 }
 
 jib {
-    to {
-        tags = setOf(project.version.toString())
-    }
+    to.tags = setOf(project.version.toString())
     from.image = "amazoncorretto:19-alpine"
 }
