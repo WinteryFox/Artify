@@ -54,7 +54,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-    runtimeOnly("org.postgresql:postgresql:42.5.4")
+    runtimeOnly("org.postgresql:postgresql:42.6.0")
     runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
     runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
 
