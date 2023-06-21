@@ -22,7 +22,7 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:$kotlin_logging_version")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
     implementation("com.rabbitmq:amqp-client:$amqp_version")
     implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
