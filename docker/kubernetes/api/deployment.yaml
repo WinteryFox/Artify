@@ -62,6 +62,11 @@ spec:
                 secretKeyRef:
                   key: POOL_ID
                   name: cognito
+            - name: AWS_COGNITO_ISSUER
+              valueFrom:
+                secretKeyRef:
+                  key: ISSUER
+                  name: cognito
             - name: RABBITMQ_HOST
               valueFrom:
                 secretKeyRef:
