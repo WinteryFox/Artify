@@ -18,21 +18,17 @@ on:
 
 jobs:
   build:
-    name: Build for JDK ${{ matrix.java }}
+    name: Build for JDK ${{ env.JAVA_VERSION }}
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        java: [ 19 ]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
           distribution: corretto
-          java-version: ${{ matrix.java }}
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Cache Gradle packages
         uses: actions/cache@v3
@@ -52,10 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     needs: build
-
-    strategy:
-      matrix:
-        java: [ 19 ]
 
     steps:
       - uses: actions/checkout@v3
