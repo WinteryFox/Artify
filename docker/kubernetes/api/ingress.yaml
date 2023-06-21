@@ -12,8 +12,8 @@ spec:
     - host: artify.mayawinterfox.com
       http:
         paths:
-          - path: /(api/?.*)
-            pathType: ImplementationSpecific
+          - path: /api
+            pathType: Prefix
             backend:
               service:
                 name: api-service
