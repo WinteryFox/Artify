@@ -1,7 +1,7 @@
-package com.artify.entity
+package com.artify.api.entity
 
-import com.artify.entity.Users.Response.Companion.asResponse
-import com.artify.textArray
+import com.artify.api.entity.Users.Response.Companion.asResponse
+import com.artify.api.textArray
 import io.ktor.server.plugins.requestvalidation.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

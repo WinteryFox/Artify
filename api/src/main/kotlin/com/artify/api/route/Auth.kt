@@ -1,14 +1,14 @@
-package com.artify.route
+package com.artify.api.route
 
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.model.*
-import com.artify.Code
-import com.artify.ExceptionWithStatusCode
-import com.artify.aws.DeviceHelper
-import com.artify.aws.secretHash
-import com.artify.entity.Users
+import com.artify.api.Code
+import com.artify.api.ExceptionWithStatusCode
+import com.artify.api.aws.DeviceHelper
+import com.artify.api.aws.secretHash
+import com.artify.api.entity.Users
 import com.auth0.jwt.exceptions.TokenExpiredException
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

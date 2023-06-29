@@ -1,11 +1,11 @@
-package com.artify.route
+package com.artify.api.route
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
-import com.artify.entity.Illustrations
-import com.artify.entity.Illustrations.Response.Companion.asResponse
-import com.artify.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
-import com.artify.entity.defaultSnowflakeGenerator
+import com.artify.api.entity.Illustrations
+import com.artify.api.entity.Illustrations.Response.Companion.asResponse
+import com.artify.api.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
+import com.artify.api.entity.defaultSnowflakeGenerator
 import com.artify.json.message.ImageProcessorMessage
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Connection

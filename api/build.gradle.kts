@@ -1,14 +1,3 @@
-val kotlin_version: String by project
-val coroutines_version: String by project
-val kord_version: String by project
-val ktor_version: String by project
-val exposed_version: String by project
-val logback_version: String by project
-val jansi_version: String by project
-val amqp_version: String by project
-val kotlin_logging_version: String by project
-val aws_version: String by project
-
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -24,46 +13,43 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.github.oshai:kotlin-logging-jvm:$kotlin_logging_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.kotlinx.serialization)
 
-    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auto-head-response-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-request-validation:$ktor_version")
-    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
-    implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-default-headers-jvm:$ktor_version")
+    implementation(libs.logging.oshai)
+    implementation(libs.logging.jansi)
+    implementation(libs.logging.logback)
 
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.serialization)
+    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.ktor.server.autoHeadResponse)
+    implementation(libs.ktor.server.auth.core)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.requestValidation)
+    implementation(libs.ktor.server.statusPages)
+    implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.defaultHeaders)
+    //testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
+    //testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
-    implementation(project(mapOf("path" to ":core")))
+    implementation(libs.amqp)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.hikaricp)
+    runtimeOnly(libs.postgresql)
 
-    implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
-    implementation("com.amazonaws:aws-java-sdk-cognitoidp:$aws_version")
-
-    implementation("com.rabbitmq:amqp-client:$amqp_version")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-
-    runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-    runtimeOnly("org.postgresql:postgresql:42.6.0")
-    runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
-    runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
+    implementation(libs.aws.s3)
+    implementation(libs.aws.cognitoidp)
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation(libs.jupiter.api)
+    testImplementation(libs.jupiter.engine)
 
-    testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
-    testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation(project(mapOf("path" to ":core")))
 }
 
 project.setProperty("mainClassName", "$group.$name.MainKt")
@@ -71,7 +57,7 @@ project.setProperty("mainClassName", "$group.$name.MainKt")
 tasks.jar {
     manifest {
         attributes(
-            "Main-Class" to "com.artify.MainKt"
+            "Main-Class" to "com.artify.api.MainKt"
         )
     }
 }

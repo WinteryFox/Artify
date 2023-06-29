@@ -1,6 +1,6 @@
-package com.artify.route
+package com.artify.api.route
 
-import com.artify.entity.Users.Response.Companion.asResponse
+import com.artify.api.entity.Users.Response.Companion.asResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

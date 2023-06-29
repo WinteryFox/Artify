@@ -1,4 +1,4 @@
-package com.artify.aws
+package com.artify.api.aws
 
 import org.apache.commons.codec.binary.Hex
 import java.lang.RuntimeException

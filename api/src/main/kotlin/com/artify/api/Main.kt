@@ -1,4 +1,4 @@
-package com.artify
+package com.artify.api
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
@@ -7,14 +7,17 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.artify.entity.Illustrations
-import com.artify.route.*
+import com.artify.api.entity.Illustrations
+import com.artify.api.route.assetsRoute
+import com.artify.api.route.authRoute
+import com.artify.api.route.illustrationsRoute
+import com.artify.api.route.usersRoute
 import com.auth0.jwk.JwkProviderBuilder
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

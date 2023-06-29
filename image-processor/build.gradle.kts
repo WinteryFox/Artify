@@ -19,19 +19,15 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.github.oshai:kotlin-logging-jvm:$kotlin_logging_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.serialization)
 
-    implementation("com.rabbitmq:amqp-client:$amqp_version")
-    implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
+    implementation(libs.bundles.logging)
+
+    implementation(libs.amqp)
+    implementation(libs.aws.s3)
 
     implementation(project(mapOf("path" to ":core")))
-
-    runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-    runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
-    runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
 }
 
 tasks.jar {
