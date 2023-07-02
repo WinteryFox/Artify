@@ -8,8 +8,6 @@ on:
       - 'gradle/**'
       - '.github/workflows/image-processor.yml'
       - 'docker/kubernetes/image-processor/*.yaml'
-    tags-ignore:
-      - '*.*'
   pull_request:
     paths:
       - 'image-processor/**'

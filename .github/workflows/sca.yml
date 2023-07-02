@@ -7,9 +7,6 @@ on:
       - 'api/**'
       - 'image-processor/**'
       - '.github/workflows/sca.yml'
-    branches: [ master ]
-    tags-ignore:
-      - '*.*'
   pull_request:
     types: [ opened, synchronize, reopened ]
 
