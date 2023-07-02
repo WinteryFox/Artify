@@ -1,7 +1,8 @@
 package com.artify.api.route
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
+import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.putObject
+import aws.smithy.kotlin.runtime.content.ByteStream
 import com.artify.api.entity.Illustrations
 import com.artify.api.entity.Illustrations.Response.Companion.asResponse
 import com.artify.api.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
@@ -19,12 +20,10 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.apache.commons.codec.binary.Hex
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.security.MessageDigest
@@ -32,7 +31,7 @@ import java.util.*
 import javax.imageio.ImageIO
 
 fun Route.illustrationsRoute(
-    s3client: AmazonS3,
+    s3client: S3Client,
     amqpConnection: Connection
 ) {
     route("/illustrations") {
@@ -87,16 +86,16 @@ fun Route.illustrationsRoute(
                         )
                         val bytes = stream.toByteArray()
 
-                        val hash = Hex.encodeHexString(MessageDigest.getInstance("MD5").digest(data))
-                        s3client.putObject(
-                            "artify-com",
-                            hash,
-                            ByteArrayInputStream(bytes),
-                            ObjectMetadata().apply {
-                                contentType = "image/png"
-                                contentLength = bytes.size.toLong()
-                            }
-                        )
+                        val hash = HexFormat.of().formatHex(MessageDigest.getInstance("MD5").digest(data))
+                        s3client.putObject {
+                            bucket = "artify-com"
+                            key = hash
+                            body = ByteStream.fromBytes(bytes)
+                            metadata = mapOf(
+                                "Content-Type" to "image/png",
+                                "Content-Length" to bytes.size.toString()
+                            )
+                        }
 
                         return@async hash to image
                     }

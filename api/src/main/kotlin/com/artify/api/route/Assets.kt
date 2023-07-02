@@ -1,17 +1,15 @@
 package com.artify.api.route
 
-import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import io.github.oshai.kotlinlogging.KotlinLogging
+import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.listObjectsV2
+import aws.sdk.kotlin.services.s3.model.GetObjectRequest
+import aws.smithy.kotlin.runtime.content.toByteArray
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.assetsRoute(s3client: AmazonS3) {
-    val logger = KotlinLogging.logger { }
-
+fun Route.assetsRoute(s3client: S3Client) {
     route("/assets") {
         route("/{hash}") {
             get {
@@ -28,27 +26,35 @@ fun Route.assetsRoute(s3client: AmazonS3) {
 
                 val size = call.request.queryParameters["size"]
 
-                val file = try {
-                    if (size.isNullOrBlank()) {
-                        s3client.getObject("artify-com", hash)
-                    } else {
-                        val objects = s3client.listObjects("artify-com", hash)
-                        val `object` = objects.objectSummaries.find { it.key.endsWith("${size}x${size}") }
-                            ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-                        s3client.getObject(`object`.bucketName, `object`.key)
+                val key = if (size.isNullOrBlank())
+                    hash
+                else
+                    s3client.listObjectsV2 {
+                        bucket = "artify-com"
+                        prefix = hash
                     }
-                } catch (e: AmazonS3Exception) {
-                    return@get call.respond(HttpStatusCode.NotFound)
-                } catch (e: AmazonServiceException) {
-                    logger.catching(e)
-                    return@get call.respond(HttpStatusCode.ServiceUnavailable)
-                }
+                        .contents
+                        ?.find { it.key?.endsWith("${size}x${size}") ?: false }
+                        ?.key
+                        ?: return@get call.respond(HttpStatusCode.NotFound)
+                // TODO: There is a bug with listing objects that occasionally occurs where it fails with end of stream... I don't know the cause or fix, requires investigation.
 
-                call.response.cacheControl(CacheControl.MaxAge(31536000, visibility = CacheControl.Visibility.Public))
-                call.respondBytes(contentType, HttpStatusCode.OK) {
-                    file.objectContent.use {
-                        it.readAllBytes()
+                s3client.getObject(GetObjectRequest {
+                    bucket = "artify-com"
+                    this.key = key
+                }) {
+                    call.response.cacheControl(
+                        CacheControl.MaxAge(
+                            31536000,
+                            visibility = CacheControl.Visibility.Public
+                        )
+                    )
+
+                    if (it.body == null)
+                        return@getObject call.respond(HttpStatusCode.BadRequest)
+
+                    call.respondBytes(contentType, HttpStatusCode.OK) {
+                        return@respondBytes it.body!!.toByteArray()
                     }
                 }
             }

@@ -17,9 +17,8 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.serialization)
 
-    implementation(libs.logging.oshai)
-    implementation(libs.logging.jansi)
-    implementation(libs.logging.logback)
+    implementation(libs.logging.kotlinLogging)
+    runtimeOnly(libs.logging.logback)
 
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
@@ -46,8 +45,7 @@ dependencies {
     implementation(libs.aws.cognitoidp)
 
     testImplementation(kotlin("test"))
-    testImplementation(libs.jupiter.api)
-    testImplementation(libs.jupiter.engine)
+    testImplementation(libs.bundles.jupiter)
 
     implementation(project(mapOf("path" to ":core")))
 }
@@ -57,7 +55,7 @@ project.setProperty("mainClassName", "$group.$name.MainKt")
 tasks.jar {
     manifest {
         attributes(
-            "Main-Class" to "com.artify.api.MainKt"
+            "Main-Class" to "$group.$name.MainKt"
         )
     }
 }

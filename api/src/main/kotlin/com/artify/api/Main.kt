@@ -1,12 +1,7 @@
 package com.artify.api
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import aws.sdk.kotlin.services.cognitoidentityprovider.CognitoIdentityProviderClient
+import aws.sdk.kotlin.services.s3.S3Client
 import com.artify.api.entity.Illustrations
 import com.artify.api.route.assetsRoute
 import com.artify.api.route.authRoute
@@ -32,6 +27,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Database
 import java.util.concurrent.TimeUnit
@@ -39,34 +35,16 @@ import java.util.concurrent.TimeUnit
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @Suppress("unused")
-fun Application.api() {
+fun Application.api() = runBlocking {
     val logger = KotlinLogging.logger { }
 
-    val s3client: AmazonS3 = AmazonS3ClientBuilder
-        .standard()
-        .withCredentials(
-            AWSStaticCredentialsProvider(
-                BasicAWSCredentials(
-                    System.getenv("AWS_ACCESS_KEY"),
-                    System.getenv("AWS_SECRET_KEY")
-                )
-            )
-        )
-        .withRegion(Regions.EU_CENTRAL_1)
-        .build()
+    val s3client = S3Client.fromEnvironment {
+        region = environment.config.property("aws.s3.region").getString()
+    }
 
-    val cognitoProvider: AWSCognitoIdentityProvider = AWSCognitoIdentityProviderClientBuilder
-        .standard()
-        .withCredentials(
-            AWSStaticCredentialsProvider(
-                BasicAWSCredentials(
-                    System.getenv("AWS_ACCESS_KEY"),
-                    System.getenv("AWS_SECRET_KEY")
-                )
-            )
-        )
-        .withRegion(Regions.EU_CENTRAL_1)
-        .build()
+    val cognitoProvider = CognitoIdentityProviderClient.fromEnvironment {
+        region = environment.config.property("aws.cognito.region").getString()
+    }
 
     val factory = ConnectionFactory().apply {
         if (environment.config.property("rabbitmq.ssl").getString().toBoolean())

@@ -8,12 +8,15 @@ on:
       - 'gradle/**'
       - '.github/workflows/image-processor.yml'
       - 'docker/kubernetes/image-processor/*.yaml'
-    branches: [ master ]
     tags-ignore:
       - '*.*'
   pull_request:
     paths:
       - 'image-processor/**'
+      - 'buildSrc/**'
+      - 'gradle/**'
+      - '.github/workflows/image-processor.yml'
+      - 'docker/kubernetes/image-processor/*.yaml'
     types: [ opened, synchronize, reopened ]
 
 jobs:

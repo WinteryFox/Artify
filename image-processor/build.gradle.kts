@@ -1,10 +1,3 @@
-val logback_version: String by project
-val jansi_version: String by project
-val amqp_version: String by project
-val kotlin_logging_version: String by project
-val aws_version: String by project
-val coroutines_version: String by project
-
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -22,7 +15,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization)
 
-    implementation(libs.bundles.logging)
+    implementation(libs.logging.kotlinLogging)
+    runtimeOnly(libs.bundles.logback)
 
     implementation(libs.amqp)
     implementation(libs.aws.s3)
