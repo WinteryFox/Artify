@@ -80,7 +80,7 @@ suspend fun main() {
                                 logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
                             }
                         } catch (e: S3Exception) {
-                            logger.error("Failed to fetch object ${body.hash}")
+                            logger.error { "Failed to fetch object ${body.hash}" }
                             return@runBlocking
                         }
                     }
