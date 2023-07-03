@@ -26,20 +26,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
+        with:
+          java-version: ${{ vars.JAVA_VERSION }}
 
       - name: Build
         run: ./gradlew clean build
-
-  test:
-    name: Run tests
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
 
       - name: Run tests
         run: ./gradlew test
