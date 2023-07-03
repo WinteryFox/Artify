@@ -1,4 +1,4 @@
-name: Api
+name: Build, publish & deploy
 
 on:
   push:
@@ -6,16 +6,23 @@ on:
       - 'api/**'
       - 'buildSrc/**'
       - 'gradle/**'
-      - '.github/workflows/api.yml'
+      - '.github/workflows/bpd.yml'
       - 'docker/kubernetes/api/*.yaml'
+    branches:
+      - master
   pull_request:
     paths:
       - 'api/**'
       - 'buildSrc/**'
       - 'gradle/**'
-      - '.github/workflows/api.yml'
+      - '.github/workflows/bpd.yml'
       - 'docker/kubernetes/api/*.yaml'
-    types: [ opened, synchronize, reopened ]
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - master
 
 jobs:
   build:
@@ -25,24 +32,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK ${{ vars.JAVA_VERSION }}
-        uses: actions/setup-java@v3
-        with:
-          distribution: corretto
-          java-version: ${{ vars.JAVA_VERSION }}
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-          restore-keys: ${{ runner.os }}-gradle-
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
 
       - name: Build
-        run: ./gradlew api:clean api:build
+        run: ./gradlew clean build
 
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Run tests
-        run: ./gradlew api:test
+        run: ./gradlew test
 
   publish:
     name: Publish artifacts
@@ -51,15 +53,6 @@ jobs:
     needs: build
 
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Build and push image
         env:
           IMAGE_TAG: ${{ github.sha }}
@@ -71,8 +64,6 @@ jobs:
     needs: publish
 
     steps:
-      - uses: actions/checkout@v3
-
       - name: Azure login
         uses: azure/login@v1
         with:
