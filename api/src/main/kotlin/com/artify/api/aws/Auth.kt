@@ -5,7 +5,6 @@ import aws.sdk.kotlin.services.cognitoidentityprovider.adminInitiateAuth
 import aws.sdk.kotlin.services.cognitoidentityprovider.adminRespondToAuthChallenge
 import aws.sdk.kotlin.services.cognitoidentityprovider.model.*
 import com.artify.api.route.Device
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.plugins.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -16,8 +15,6 @@ class Auth(
     private val clientSecret: String,
     private val deviceHelper: DeviceHelper? = null
 ) {
-    private val logger = KotlinLogging.logger { }
-
     suspend fun adminInitiateAuth(
         provider: CognitoIdentityProviderClient,
         username: String,
@@ -32,30 +29,25 @@ class Auth(
         if (device != null)
             parameters["DEVICE_KEY"] = device.key
 
-        val authenticationResult = try {
-            val response = provider.adminInitiateAuth {
-                authFlow = AuthFlowType.AdminUserPasswordAuth
-                authParameters = parameters
-                userPoolId = poolId
-                clientId = this@Auth.clientId
-            }
-            var challengeName: ChallengeNameType? = response.challengeName
-            var challengeResponse: AdminRespondToAuthChallengeResponse? = null
-
-            while (challengeName != null) {
-                challengeResponse =
-                    provider.solveChallenge(challengeName, username, device, challengeResponse)
-                challengeName = challengeResponse.challengeName
-            }
-
-            if (challengeResponse != null)
-                challengeResponse.authenticationResult!!
-            else
-                response.authenticationResult!!
-        } catch (e: CognitoIdentityProviderException) {
-            logger.catching(e)
-            throw e
+        val response = provider.adminInitiateAuth {
+            authFlow = AuthFlowType.AdminUserPasswordAuth
+            authParameters = parameters
+            userPoolId = poolId
+            clientId = this@Auth.clientId
         }
+        var challengeName: ChallengeNameType? = response.challengeName
+        var challengeResponse: AdminRespondToAuthChallengeResponse? = null
+
+        while (challengeName != null) {
+            challengeResponse =
+                provider.solveChallenge(challengeName, username, device, challengeResponse)
+            challengeName = challengeResponse.challengeName
+        }
+
+        val authenticationResult = if (challengeResponse != null)
+            challengeResponse.authenticationResult!!
+        else
+            response.authenticationResult!!
 
         return authenticationResult
     }

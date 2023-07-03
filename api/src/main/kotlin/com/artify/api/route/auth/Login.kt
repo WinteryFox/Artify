@@ -31,10 +31,9 @@ fun Route.login(
                 cognitoPoolId,
                 cognitoClientId,
                 cognitoClientSecret,
-                if (request.device != null)
+                request.device?.let {
                     DeviceHelper(request.device.key, request.device.groupKey)
-                else
-                    null
+                }
             )
 
             val authenticationResult = authHelper.adminInitiateAuth(
@@ -44,7 +43,7 @@ fun Route.login(
                 request.device
             )
 
-            val deviceConfig = if (request.device == null) {
+            val deviceConfig = request.device?.let {
                 val deviceHelper = DeviceHelper(
                     authenticationResult.newDeviceMetadata!!.deviceKey!!,
                     authenticationResult.newDeviceMetadata!!.deviceGroupKey!!
@@ -62,7 +61,7 @@ fun Route.login(
                 }
 
                 config
-            } else null
+            }
 
             call.respond(
                 HttpStatusCode.OK, Jwt(
@@ -71,14 +70,13 @@ fun Route.login(
                     authenticationResult.idToken!!,
                     authenticationResult.accessToken!!,
                     authenticationResult.refreshToken,
-                    if (deviceConfig == null)
-                        null
-                    else
+                    deviceConfig?.let {
                         Device(
                             authenticationResult.newDeviceMetadata!!.deviceKey!!,
                             authenticationResult.newDeviceMetadata!!.deviceGroupKey!!,
                             deviceConfig.devicePassword
                         )
+                    }
                 )
             )
         } catch (_: InvalidParameterException) {
