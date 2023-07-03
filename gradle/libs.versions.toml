@@ -1,0 +1,51 @@
+[versions]
+kotlin = "1.8.22"
+ktor = "2.3.2"
+exposed = "0.41.1"
+aws = "0.28.0-beta"
+jupiter = "5.9.3"
+
+[libraries]
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.7.0" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.4.0" }
+kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5.1" }
+
+logging-kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version = "4.0.0" }
+logging-jansi = { group = "org.fusesource.jansi", name = "jansi", version = "2.4.0" }
+logging-logback = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.5" }
+
+ktor-plugin = { group = "io.ktor.plugin", name = "plugin", version.ref = "ktor" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-serialization = { group = "io.ktor", name = "ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
+ktor-server-contentNegotiation = { group = "io.ktor", name = "ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+ktor-server-autoHeadResponse = { group = "io.ktor", name = "ktor-server-auto-head-response-jvm", version.ref = "ktor" }
+ktor-server-auth-core = { group = "io.ktor", name = "ktor-server-auth-jvm", version.ref = "ktor" }
+ktor-server-auth-jwt = { group = "io.ktor", name = "ktor-server-auth-jwt-jvm", version.ref = "ktor" }
+ktor-server-requestValidation = { group = "io.ktor", name = "ktor-server-request-validation-jvm", version.ref = "ktor" }
+ktor-server-statusPages = { group = "io.ktor", name = "ktor-server-status-pages-jvm", version.ref = "ktor" }
+ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors-jvm", version.ref = "ktor" }
+ktor-server-defaultHeaders = { group = "io.ktor", name = "ktor-server-default-headers-jvm", version.ref = "ktor" }
+
+postgresql = { group = "org.postgresql", name = "postgresql", version = "42.6.0" }
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+hikaricp = { group = "com.zaxxer", name = "HikariCP", version = "5.0.1" }
+amqp = { group = "com.rabbitmq", name = "amqp-client", version = "5.17.0" }
+
+aws-s3 = { group = "aws.sdk.kotlin", name = "s3-jvm", version.ref = "aws" }
+aws-cognitoidp = { group = "aws.sdk.kotlin", name = "cognitoidentityprovider-jvm", version.ref = "aws" }
+
+jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jupiter" }
+jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jupiter" }
+
+jib = { group = "com.google.cloud.tools", name = "jib-gradle-plugin", version = "3.3.2" }
+sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.2.1.3168" }
+
+[plugins]
+
+
+[bundles]
+logback = ["logging-logback", "logging-jansi"]
+jupiter = ["jupiter-api", "jupiter-engine"]

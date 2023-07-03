@@ -1,4 +1,4 @@
-package com.artify.aws
+package com.artify.api.aws
 
 import java.security.MessageDigest
 import java.util.*

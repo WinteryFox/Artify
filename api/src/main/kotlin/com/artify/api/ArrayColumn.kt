@@ -1,4 +1,4 @@
-package com.artify
+package com.artify.api
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ColumnType

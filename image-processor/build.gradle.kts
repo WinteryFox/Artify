@@ -1,10 +1,3 @@
-val logback_version: String by project
-val jansi_version: String by project
-val amqp_version: String by project
-val kotlin_logging_version: String by project
-val aws_version: String by project
-val coroutines_version: String by project
-
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -19,19 +12,16 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.github.oshai:kotlin-logging-jvm:$kotlin_logging_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.serialization)
 
-    implementation("com.rabbitmq:amqp-client:$amqp_version")
-    implementation("com.amazonaws:aws-java-sdk-s3:$aws_version")
+    implementation(libs.logging.kotlinLogging)
+    runtimeOnly(libs.bundles.logback)
+
+    implementation(libs.amqp)
+    implementation(libs.aws.s3)
 
     implementation(project(mapOf("path" to ":core")))
-
-    runtimeOnly("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
-    runtimeOnly("ch.qos.logback:logback-classic:$logback_version")
-    runtimeOnly("org.fusesource.jansi:jansi:$jansi_version")
 }
 
 tasks.jar {
@@ -43,6 +33,9 @@ tasks.jar {
 }
 
 jib {
-    to.image = "winteryfox/artify-image-processor"
+    to {
+        image = "winteryfox/artify-image-processor"
+        tags = setOf(project.version.toString())
+    }
     from.image = "amazoncorretto:19-alpine"
 }

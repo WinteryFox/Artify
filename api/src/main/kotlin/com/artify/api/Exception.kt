@@ -1,4 +1,4 @@
-package com.artify
+package com.artify.api
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable

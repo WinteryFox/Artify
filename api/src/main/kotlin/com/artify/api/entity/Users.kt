@@ -1,4 +1,4 @@
-package com.artify.entity
+package com.artify.api.entity
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.UUIDEntity
@@ -30,7 +30,7 @@ object Users {
         val avatar: String?
     ) {
         companion object {
-            fun Entity.asResponse() = Users.Response(
+            fun Entity.asResponse() = Response(
                 id.value.toString(),
                 handle,
                 username,

@@ -1,6 +1,6 @@
-package com.artify.entity
+package com.artify.api.entity
 
-import com.artify.entity.SnowflakeGenerator.Companion.TIMESTAMP_SHIFT
+import com.artify.api.entity.SnowflakeGenerator.Companion.TIMESTAMP_SHIFT
 import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.sign

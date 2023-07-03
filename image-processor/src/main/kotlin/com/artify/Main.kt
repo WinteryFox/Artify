@@ -1,15 +1,14 @@
 package com.artify
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.model.GetObjectRequest
+import aws.sdk.kotlin.services.s3.model.S3Exception
+import aws.smithy.kotlin.runtime.content.toByteArray
 import com.artify.json.message.ImageProcessorMessage
 import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.DeliverCallback
-import io.github.oshai.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -22,18 +21,9 @@ suspend fun main() {
     logger.info { "Henlo! Image processor microservice starting!" }
     logger.info { "Connecting to RabbitMQ" }
 
-    val s3client = AmazonS3ClientBuilder
-        .standard()
-        .withCredentials(
-            AWSStaticCredentialsProvider(
-                BasicAWSCredentials(
-                    System.getenv("AWS_ACCESS_KEY"),
-                    System.getenv("AWS_SECRET_KEY")
-                )
-            )
-        )
-        .withRegion(Regions.EU_CENTRAL_1)
-        .build()
+    val s3client = S3Client.fromEnvironment {
+        region = System.getenv("AWS_S3_REGION")
+    }
 
     val factory = ConnectionFactory().apply {
         if (System.getenv("RABBITMQ_SSL").toBoolean())
@@ -62,33 +52,37 @@ suspend fun main() {
                     runBlocking {
                         logger.trace { "Generating scaled thumbnails for hash ${body.hash}" }
 
-                        val blob = try {
-                            s3client.getObject("artify-com", body.hash)
-                        } catch (e: AmazonS3Exception) {
+                        try {
+                            s3client.getObject(GetObjectRequest {
+                                bucket = "artify-com"
+                                key = body.hash
+                            }) { `object` ->
+                                val image = ImageIO.read(`object`.body!!.toByteArray().inputStream())
+
+                                val cropped = image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
+
+                                // TODO: Parallelize this?
+                                body.scales.map {
+                                    launch {
+                                        logger.trace { "Generating scaled down thumbnail at ${it.x}x${it.y}" }
+
+                                        s3client.putImage(
+                                            "artify-com",
+                                            "${body.hash}/${it.x}x${it.y}",
+                                            cropped.scale(it.x, it.y),
+                                            `object`.contentType!!
+                                        )
+
+                                        logger.trace { "Finished generating thumbnail at ${it.x}x${it.y}" }
+                                    }
+                                }.joinAll()
+
+                                logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
+                            }
+                        } catch (e: S3Exception) {
                             logger.error("Failed to fetch object ${body.hash}")
                             return@runBlocking
                         }
-                        val image = ImageIO.read(blob.objectContent)
-
-                        val cropped = image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
-
-                        // TODO: Parallelize this?
-                        body.scales.map {
-                            launch {
-                                logger.trace { "Generating scaled down thumbnail at ${it.x}x${it.y}" }
-
-                                s3client.putImage(
-                                    "artify-com",
-                                    "${body.hash}/${it.x}x${it.y}",
-                                    cropped.scale(it.x, it.y),
-                                    blob.objectMetadata.contentType
-                                )
-
-                                logger.trace { "Finished generating thumbnail at ${it.x}x${it.y}" }
-                            }
-                        }.joinAll()
-
-                        logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
                     }
 
                     channel.basicAck(message.envelope.deliveryTag, false)
