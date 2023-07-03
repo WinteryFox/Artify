@@ -32,7 +32,7 @@ exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version
 exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
 exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
 hikaricp = { group = "com.zaxxer", name = "HikariCP", version = "5.0.1" }
-amqp = { group = "com.rabbitmq", name = "amqp-client", version = "5.17.0" }
+amqp = { group = "com.rabbitmq", name = "amqp-client", version = "5.18.0" }
 
 aws-s3 = { group = "aws.sdk.kotlin", name = "s3-jvm", version.ref = "aws" }
 aws-cognitoidp = { group = "aws.sdk.kotlin", name = "cognitoidentityprovider-jvm", version.ref = "aws" }
