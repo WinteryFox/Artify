@@ -26,6 +26,7 @@ jobs:
 
       - uses: actions/setup-java@v3
         with:
+          distribution: corretto
           java-version: ${{ vars.JAVA_VERSION }}
 
       - name: Setup Gradle
