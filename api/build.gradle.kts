@@ -65,6 +65,9 @@ tasks.test {
 }
 
 jib {
-    to.tags = setOf(project.version.toString())
+    to {
+        image = "winteryfox/artify-api"
+        tags = setOf(project.version.toString())
+    }
     from.image = "amazoncorretto:19-alpine"
 }

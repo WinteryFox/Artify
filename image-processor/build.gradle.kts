@@ -33,6 +33,9 @@ tasks.jar {
 }
 
 jib {
-    to.image = "winteryfox/artify-image-processor"
+    to {
+        image = "winteryfox/artify-image-processor"
+        tags = setOf(project.version.toString())
+    }
     from.image = "amazoncorretto:19-alpine"
 }
