@@ -11,21 +11,16 @@ import io.ktor.server.routing.*
 
 fun Route.assetsRoute(s3client: S3Client) {
     route("/assets") {
-        route("/{hash}") {
+        route(Regex("(?<hash>[a-f0-9]{32})\\.?(?<extension>[a-z]*?$)")) {
             get {
-                val arg = call.parameters["hash"]!!.split('.')
-                val hash = arg[0]
-
-                val contentType = if (arg.size > 1)
-                    ContentType.defaultForFileExtension(arg[arg.size - 1])
-                else
-                    ContentType.Image.PNG
+                val hash = call.parameters["hash"]!!
+                val extension = call.parameters["extension"]
+                val contentType = parseContentType(extension)
 
                 if (contentType !in setOf(ContentType.Image.PNG, ContentType.Image.JPEG))
                     return@get call.respond(HttpStatusCode.UnsupportedMediaType)
 
                 val size = call.request.queryParameters["size"]
-
                 val key = if (size.isNullOrBlank())
                     hash
                 else
@@ -43,15 +38,15 @@ fun Route.assetsRoute(s3client: S3Client) {
                     bucket = "artify-com"
                     this.key = key
                 }) {
+                    if (it.body == null)
+                        return@getObject call.respond(HttpStatusCode.BadRequest)
+
                     call.response.cacheControl(
                         CacheControl.MaxAge(
                             31536000,
                             visibility = CacheControl.Visibility.Public
                         )
                     )
-
-                    if (it.body == null)
-                        return@getObject call.respond(HttpStatusCode.BadRequest)
 
                     call.respondBytes(contentType, HttpStatusCode.OK) {
                         return@respondBytes it.body!!.toByteArray()
@@ -61,3 +56,9 @@ fun Route.assetsRoute(s3client: S3Client) {
         }
     }
 }
+
+fun parseContentType(extension: String?): ContentType =
+    if (extension.isNullOrBlank())
+        ContentType.Image.PNG
+    else
+        ContentType.defaultForFileExtension(extension)

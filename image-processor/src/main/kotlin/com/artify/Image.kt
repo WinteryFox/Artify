@@ -1,11 +1,11 @@
 package com.artify
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
-import com.amazonaws.services.s3.model.PutObjectResult
+import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.model.PutObjectResponse
+import aws.sdk.kotlin.services.s3.putObject
+import aws.smithy.kotlin.runtime.content.ByteStream
 import java.awt.Image
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
@@ -28,16 +28,14 @@ fun BufferedImage.toByteArray(type: String): ByteArray {
     return stream.toByteArray()
 }
 
-fun AmazonS3.putImage(bucket: String, key: String, image: BufferedImage, type: String): PutObjectResult {
+suspend fun S3Client.putImage(bucket: String, key: String, image: BufferedImage, type: String): PutObjectResponse {
     val bytes = image.toByteArray(type.substringAfter('/'))
 
-    return putObject(
-        bucket,
-        key,
-        ByteArrayInputStream(bytes),
-        ObjectMetadata().apply {
-            contentType = type
-            contentLength = bytes.size.toLong()
-        }
-    )
+    return putObject {
+        this.bucket = bucket
+        this.key = key
+        body = ByteStream.fromBytes(image.toByteArray(type))
+        contentType = type
+        contentLength = bytes.size.toLong()
+    }
 }
