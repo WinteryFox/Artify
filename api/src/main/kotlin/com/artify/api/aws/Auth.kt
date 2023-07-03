@@ -61,14 +61,14 @@ class Auth(
         when (name) {
             ChallengeNameType.DeviceSrpAuth -> {
                 if (device == null)
-                    throw BadRequestException("Device may not be null") // TODO: Error code
+                    throw BadRequestException("Device may not be null")
 
                 solveSrpAuth(username, device, response?.session)
             }
 
             ChallengeNameType.DevicePasswordVerifier -> {
                 if (device == null)
-                    throw BadRequestException("Device may not be null") // TODO: Error code
+                    throw BadRequestException("Device may not be null")
 
                 solveDevicePasswordVerifier(
                     username,
