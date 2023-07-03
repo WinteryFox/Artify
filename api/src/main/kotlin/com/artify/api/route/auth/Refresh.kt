@@ -37,8 +37,6 @@ fun Route.refresh(
             }
         } catch (e: NotAuthorizedException) {
             return@post call.respond(HttpStatusCode.Unauthorized)
-            /*} catch (e: TokenExpiredException) { TODO
-            return@post call.respond(HttpStatusCode.Unauthorized)*/
         } catch (e: UserNotFoundException) {
             return@post call.respond(HttpStatusCode.Unauthorized)
         } catch (e: CognitoIdentityProviderException) {
@@ -46,18 +44,18 @@ fun Route.refresh(
             return@post call.respond(HttpStatusCode.InternalServerError)
         }
 
-        if (result.challengeName == null)
-            call.respond(
-                HttpStatusCode.OK, Jwt(
-                    result.authenticationResult!!.expiresIn,
-                    result.authenticationResult!!.tokenType!!,
-                    result.authenticationResult!!.idToken!!,
-                    result.authenticationResult!!.accessToken!!,
-                    result.authenticationResult!!.refreshToken,
-                    null
-                )
+        if (result.challengeName != null || result.authenticationResult == null)
+            return@post call.respond(HttpStatusCode.Unauthorized)
+
+        call.respond(
+            HttpStatusCode.OK, Jwt(
+                result.authenticationResult!!.expiresIn,
+                result.authenticationResult!!.tokenType!!,
+                result.authenticationResult!!.idToken!!,
+                result.authenticationResult!!.accessToken!!,
+                result.authenticationResult!!.refreshToken,
+                null
             )
-        else
-            TODO("Handle additional challenges")
+        )
     }
 }

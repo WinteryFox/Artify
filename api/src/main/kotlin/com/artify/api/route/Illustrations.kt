@@ -34,7 +34,6 @@ fun Route.illustrationsRoute(
         }
     }
 
-    // TODO: Probably needs to be moved somewhere else
     route("/users/{id}/illustrations") {
         get {
             val userId = try {

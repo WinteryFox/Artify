@@ -61,7 +61,6 @@ suspend fun main() {
 
                                 val cropped = image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
 
-                                // TODO: Parallelize this?
                                 body.scales.map {
                                     launch {
                                         logger.trace { "Generating scaled down thumbnail at ${it.x}x${it.y}" }
@@ -80,7 +79,7 @@ suspend fun main() {
                                 logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
                             }
                         } catch (e: S3Exception) {
-                            logger.error("Failed to fetch object ${body.hash}")
+                            logger.error { "Failed to fetch object ${body.hash}" }
                             return@runBlocking
                         }
                     }
