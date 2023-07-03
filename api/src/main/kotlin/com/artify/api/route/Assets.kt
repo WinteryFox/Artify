@@ -11,7 +11,7 @@ import io.ktor.server.routing.*
 
 fun Route.assetsRoute(s3client: S3Client) {
     route("/assets") {
-        route(Regex("(?<hash>[a-f0-9]{32})\\.?(?<extension>[a-z]*?$)")) {
+        route(Regex("^(?<hash>[a-f0-9]{32})(\\.(?<extension>[a-z]+))?$")) {
             get {
                 val hash = call.parameters["hash"]!!
                 val extension = call.parameters["extension"]
