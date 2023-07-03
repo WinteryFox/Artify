@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("io.ktor.plugin")
+    id(libs.plugins.jib.get().pluginId)
     sources
 }
 
@@ -49,8 +48,6 @@ dependencies {
 
     implementation(project(mapOf("path" to ":core")))
 }
-
-project.setProperty("mainClassName", "$group.$name.MainKt")
 
 tasks.jar {
     manifest {

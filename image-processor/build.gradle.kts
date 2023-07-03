@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization")
+    id(libs.plugins.jib.get().pluginId)
     sources
 }
 

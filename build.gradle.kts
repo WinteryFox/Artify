@@ -7,8 +7,6 @@ plugins {
 subprojects {
     version = project_version
     group = "com.artify"
-
-    apply(plugin = "com.google.cloud.tools.jib")
 }
 
 sonarqube {
