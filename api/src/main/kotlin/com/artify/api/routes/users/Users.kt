@@ -1,4 +1,4 @@
-package com.artify.api.routes
+package com.artify.api.routes.users
 
 import com.artify.api.entity.Users.Response.Companion.asResponse
 import com.artify.api.routes.auth.getSelf
@@ -8,6 +8,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.usersRoute() {
     route("/users") {
@@ -16,10 +17,18 @@ fun Route.usersRoute() {
                 get {
                     call.respond(HttpStatusCode.OK, getSelf()!!.asResponse())
                 }
-            }
 
-            patch {
-                TODO()
+                patch {
+                    TODO()
+                }
+
+                delete {
+                    transaction {
+                        getSelf()!!.delete()
+                    }
+
+                    call.respond(HttpStatusCode.OK)
+                }
             }
         }
 
