@@ -1,4 +1,4 @@
-package com.artify.api.route
+package com.artify.api.routes
 
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.listObjectsV2
@@ -32,7 +32,6 @@ fun Route.assetsRoute(s3client: S3Client) {
                         ?.find { it.key?.endsWith("${size}x${size}") ?: false }
                         ?.key
                         ?: return@get call.respond(HttpStatusCode.NotFound)
-                // TODO: There is a bug with listing objects that occasionally occurs where it fails with end of stream... I don't know the cause or fix, requires investigation.
 
                 s3client.getObject(GetObjectRequest {
                     bucket = "artify-com"

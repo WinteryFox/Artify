@@ -1,4 +1,4 @@
-package com.artify.api.route.auth
+package com.artify.api.routes.auth
 
 import aws.sdk.kotlin.services.cognitoidentityprovider.CognitoIdentityProviderClient
 import aws.sdk.kotlin.services.cognitoidentityprovider.confirmDevice
@@ -7,9 +7,6 @@ import com.artify.api.Code
 import com.artify.api.ExceptionWithStatusCode
 import com.artify.api.aws.Auth
 import com.artify.api.aws.DeviceHelper
-import com.artify.api.route.Device
-import com.artify.api.route.Jwt
-import com.artify.api.route.Login
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*

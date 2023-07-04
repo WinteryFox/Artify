@@ -3,10 +3,10 @@ package com.artify.api
 import aws.sdk.kotlin.services.cognitoidentityprovider.CognitoIdentityProviderClient
 import aws.sdk.kotlin.services.s3.S3Client
 import com.artify.api.entity.Illustrations
-import com.artify.api.route.assetsRoute
-import com.artify.api.route.authRoute
-import com.artify.api.route.illustrationsRoute
-import com.artify.api.route.usersRoute
+import com.artify.api.routes.assetsRoute
+import com.artify.api.routes.auth.authRoute
+import com.artify.api.routes.illustrations.illustrationsRoute
+import com.artify.api.routes.usersRoute
 import com.auth0.jwk.JwkProviderBuilder
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory

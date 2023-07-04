@@ -1,4 +1,4 @@
-package com.artify.api.route.auth.register
+package com.artify.api.routes.auth.register
 
 import aws.sdk.kotlin.services.cognitoidentityprovider.CognitoIdentityProviderClient
 import aws.sdk.kotlin.services.cognitoidentityprovider.confirmSignUp
@@ -8,7 +8,7 @@ import aws.sdk.kotlin.services.cognitoidentityprovider.model.UserNotFoundExcepti
 import com.artify.api.Code
 import com.artify.api.ExceptionWithStatusCode
 import com.artify.api.aws.secretHash
-import com.artify.api.route.Verify
+import com.artify.api.routes.auth.Verify
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*

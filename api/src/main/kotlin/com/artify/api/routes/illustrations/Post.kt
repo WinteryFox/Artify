@@ -1,4 +1,4 @@
-package com.artify.api.route.illustrations
+package com.artify.api.routes.illustrations
 
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.putObject
@@ -6,7 +6,7 @@ import aws.smithy.kotlin.runtime.content.ByteStream
 import com.artify.api.entity.Illustrations
 import com.artify.api.entity.Illustrations.Response.Companion.asResponse
 import com.artify.api.entity.defaultSnowflakeGenerator
-import com.artify.api.route.getSelf
+import com.artify.api.routes.auth.getSelf
 import com.artify.json.message.ImageProcessorMessage
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Connection

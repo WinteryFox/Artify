@@ -1,11 +1,9 @@
-package com.artify.api.route
+package com.artify.api.routes.auth
 
 import aws.sdk.kotlin.services.cognitoidentityprovider.*
 import com.artify.api.entity.Users
-import com.artify.api.route.auth.login
-import com.artify.api.route.auth.refresh
-import com.artify.api.route.auth.register.register
-import com.artify.api.route.auth.register.verify
+import com.artify.api.routes.auth.register.register
+import com.artify.api.routes.auth.register.verify
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*

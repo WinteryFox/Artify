@@ -1,4 +1,4 @@
-package com.artify.api.route.auth
+package com.artify.api.routes.auth
 
 import aws.sdk.kotlin.services.cognitoidentityprovider.CognitoIdentityProviderClient
 import aws.sdk.kotlin.services.cognitoidentityprovider.adminInitiateAuth
@@ -7,8 +7,6 @@ import aws.sdk.kotlin.services.cognitoidentityprovider.model.CognitoIdentityProv
 import aws.sdk.kotlin.services.cognitoidentityprovider.model.NotAuthorizedException
 import aws.sdk.kotlin.services.cognitoidentityprovider.model.UserNotFoundException
 import com.artify.api.aws.secretHash
-import com.artify.api.route.Jwt
-import com.artify.api.route.Refresh
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.server.application.*

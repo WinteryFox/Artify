@@ -1,8 +1,8 @@
-package com.artify.api.route.illustrations
+package com.artify.api.routes.illustrations
 
 import com.artify.api.entity.Illustrations
 import com.artify.api.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor
-import com.artify.api.route.getSelf
+import com.artify.api.routes.auth.getSelf
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*

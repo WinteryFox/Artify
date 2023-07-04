@@ -1,4 +1,4 @@
-package com.artify.api.route.illustrations.id
+package com.artify.api.routes.illustrations.id
 
 import com.artify.api.entity.Illustrations
 import com.artify.api.entity.Illustrations.ResponseWithAuthor.Companion.asResponseWithAuthor

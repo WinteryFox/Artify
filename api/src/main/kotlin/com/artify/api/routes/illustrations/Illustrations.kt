@@ -1,11 +1,9 @@
-package com.artify.api.route
+package com.artify.api.routes.illustrations
 
 import aws.sdk.kotlin.services.s3.S3Client
 import com.artify.api.entity.Illustrations
 import com.artify.api.entity.Illustrations.Response.Companion.asResponse
-import com.artify.api.route.illustrations.getIllustrations
-import com.artify.api.route.illustrations.id.getIllustration
-import com.artify.api.route.illustrations.postIllustration
+import com.artify.api.routes.illustrations.id.getIllustration
 import com.rabbitmq.client.Connection
 import io.ktor.http.*
 import io.ktor.server.application.*

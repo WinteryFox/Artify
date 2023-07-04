@@ -4,7 +4,7 @@ import aws.sdk.kotlin.services.cognitoidentityprovider.CognitoIdentityProviderCl
 import aws.sdk.kotlin.services.cognitoidentityprovider.adminInitiateAuth
 import aws.sdk.kotlin.services.cognitoidentityprovider.adminRespondToAuthChallenge
 import aws.sdk.kotlin.services.cognitoidentityprovider.model.*
-import com.artify.api.route.Device
+import com.artify.api.routes.auth.Device
 import io.ktor.server.plugins.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -44,12 +44,10 @@ class Auth(
             challengeName = challengeResponse.challengeName
         }
 
-        val authenticationResult = if (challengeResponse != null)
+        return if (challengeResponse != null)
             challengeResponse.authenticationResult!!
         else
             response.authenticationResult!!
-
-        return authenticationResult
     }
 
     private suspend fun CognitoIdentityProviderClient.solveChallenge(
