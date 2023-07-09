@@ -99,9 +99,7 @@ fun PipelineContext<*, ApplicationCall>.getSelf(): Users.Entity? {
         return null
     }
 
-    return transaction {
-        Users.Entity.findById(uuid)
-    }
+    return transaction { Users.Entity.findById(uuid) }
 }
 
 fun getUser(id: String): Users.Entity? {

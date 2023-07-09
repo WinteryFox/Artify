@@ -9,8 +9,13 @@ import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object Illustrations {
+    const val MAX_TITLE_LENGTH = 100
+    const val MAX_BODY_LENGTH = 5000
+    const val MAX_ILLUSTRATIONS = 10
+
     object Table : LongIdTable("media.illustrations", "id") {
         val authorId = reference("user_id", Users.Table)
         val title = text("title")
@@ -77,16 +82,20 @@ object Illustrations {
         val hashes: List<String>
     ) {
         companion object {
-            fun Entity.asResponseWithAuthor() = ResponseWithAuthor(
-                id.value.toString(),
-                author.asResponse(),
-                title,
-                body,
-                commentsEnabled,
-                isPrivate,
-                isAi,
-                hashes.toList()
-            )
+            fun Entity.asResponseWithAuthor(): ResponseWithAuthor {
+                val author = transaction { author.asResponse() }
+
+                return ResponseWithAuthor(
+                    id.value.toString(),
+                    author,
+                    title,
+                    body,
+                    commentsEnabled,
+                    isPrivate,
+                    isAi,
+                    hashes.toList()
+                )
+            }
         }
     }
 
@@ -105,17 +114,17 @@ object Illustrations {
         fun validate(): ValidationResult {
             val reasons = mutableListOf<String>()
 
-            if (title.length > 100)
-                reasons.add("Title is >100 characters")
+            if (title.isBlank() || title.length > MAX_TITLE_LENGTH)
+                reasons.add("Title may not be >100 characters")
 
-            if (body.length > 5000)
-                reasons.add("Body is >5000 characters")
+            if (body.isBlank() || body.length > MAX_BODY_LENGTH)
+                reasons.add("Body may not be >5000 characters")
 
             if (illustrations.isEmpty())
                 reasons.add("Must at least upload one illustration")
 
-            if (illustrations.size > 10)
-                reasons.add("Cannot upload more than 10 illustrations")
+            if (illustrations.size > MAX_ILLUSTRATIONS)
+                reasons.add("May not upload more than 10 illustrations")
 
             for (illustration in illustrations) {
                 if (!illustration.startsWith("data:"))
@@ -129,6 +138,33 @@ object Illustrations {
                 if (mimeType !in setOf("image/png", "image/jpeg", "image/webp"))
                     reasons.add("One or multiple illustrations has an unsupported MIME type")
             }
+
+            return if (reasons.isEmpty())
+                ValidationResult.Valid
+            else
+                ValidationResult.Invalid(reasons)
+        }
+    }
+
+    @Serializable
+    data class Patch(
+        val title: String,
+        val body: String,
+        @SerialName("comments_enabled")
+        val commentsEnabled: Boolean,
+        @SerialName("is_private")
+        val isPrivate: Boolean,
+        @SerialName("is_ai")
+        val isAi: Boolean
+    ) {
+        fun validate(): ValidationResult {
+            val reasons = mutableListOf<String>()
+
+            if (title.isBlank() || title.length > MAX_TITLE_LENGTH)
+                reasons.add("Title may not be >100 characters")
+
+            if (body.isBlank() || body.length > MAX_BODY_LENGTH)
+                reasons.add("Body may not be >5000 characters")
 
             return if (reasons.isEmpty())
                 ValidationResult.Valid

@@ -92,10 +92,13 @@ fun Application.api() = runBlocking {
         validate<Illustrations.Post> {
             it.validate()
         }
+        validate<Illustrations.Patch> {
+            it.validate()
+        }
     }
     install(StatusPages) {
         exception<RequestValidationException> { call, cause ->
-            call.respond(HttpStatusCode.BadRequest, cause.reasons.joinToString())
+            call.respond(HttpStatusCode.BadRequest, cause.reasons)
         }
 
         exception<ExceptionWithStatusCode> { call, cause ->

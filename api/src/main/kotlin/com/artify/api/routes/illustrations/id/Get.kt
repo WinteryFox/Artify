@@ -6,26 +6,32 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.pipeline.*
 import org.jetbrains.exposed.sql.transactions.transaction
+
+fun PipelineContext<*, ApplicationCall>.getIllustration(): Illustrations.Entity? {
+    val id = try {
+        call.parameters["id"]?.toLong() ?: return null
+    } catch (e: NumberFormatException) {
+        return null
+    }
+
+    return getIllustration(id)
+}
+
+fun getIllustration(id: Long): Illustrations.Entity? =
+    transaction {
+        Illustrations.Entity
+            .find { Illustrations.Table.id.eq(id) }
+            .singleOrNull()
+    }
 
 fun Route.getIllustration() {
     get {
-        val id = try {
-            call.parameters["id"]?.toLong()
-                ?: return@get call.respond(HttpStatusCode.NotFound)
-        } catch (e: NumberFormatException) {
-            return@get call.respond(HttpStatusCode.NotFound)
-        }
+        val illustration = getIllustration()?.asResponseWithAuthor()
 
-        val result = transaction {
-            Illustrations.Entity
-                .find { Illustrations.Table.id.eq(id) }
-                .singleOrNull()
-                ?.asResponseWithAuthor()
-        }
-
-        if (result != null)
-            call.respond(HttpStatusCode.OK, result)
+        if (illustration != null)
+            call.respond(HttpStatusCode.OK, illustration)
         else
             call.respond(HttpStatusCode.NotFound)
     }

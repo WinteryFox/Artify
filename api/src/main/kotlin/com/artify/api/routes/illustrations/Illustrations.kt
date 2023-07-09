@@ -3,7 +3,9 @@ package com.artify.api.routes.illustrations
 import aws.sdk.kotlin.services.s3.S3Client
 import com.artify.api.entity.Illustrations
 import com.artify.api.entity.Illustrations.Response.Companion.asResponse
+import com.artify.api.routes.illustrations.id.deleteIllustration
 import com.artify.api.routes.illustrations.id.getIllustration
+import com.artify.api.routes.illustrations.id.patchIllustration
 import com.rabbitmq.client.Connection
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -28,7 +30,15 @@ fun Route.illustrationsRoute(
         }
 
         route("/{id}") {
-            getIllustration()
+            authenticate(optional = true) {
+                getIllustration()
+            }
+
+            authenticate {
+                patchIllustration()
+
+                deleteIllustration()
+            }
         }
     }
 
