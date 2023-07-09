@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Artify.iml" filepath="$PROJECT_DIR$/.idea/modules/Artify.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/api/Artify.api.test.iml" filepath="$PROJECT_DIR$/.idea/modules/api/Artify.api.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/Artify.core.main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/Artify.core.main.iml" />
     </modules>
   </component>
 </project>
