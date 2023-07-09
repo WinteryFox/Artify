@@ -115,10 +115,10 @@ object Illustrations {
             val reasons = mutableListOf<String>()
 
             if (title.isBlank() || title.length > MAX_TITLE_LENGTH)
-                reasons.add("Title may not be >100 characters")
+                reasons.add("Title may not be blank or >100 characters")
 
             if (body.isBlank() || body.length > MAX_BODY_LENGTH)
-                reasons.add("Body may not be >5000 characters")
+                reasons.add("Body may not be blank or >5000 characters")
 
             if (illustrations.isEmpty())
                 reasons.add("Must at least upload one illustration")
@@ -148,23 +148,23 @@ object Illustrations {
 
     @Serializable
     data class Patch(
-        val title: String,
-        val body: String,
+        val title: String? = null,
+        val body: String? = null,
         @SerialName("comments_enabled")
-        val commentsEnabled: Boolean,
+        val commentsEnabled: Boolean? = null,
         @SerialName("is_private")
-        val isPrivate: Boolean,
+        val isPrivate: Boolean? = null,
         @SerialName("is_ai")
-        val isAi: Boolean
+        val isAi: Boolean? = null
     ) {
         fun validate(): ValidationResult {
             val reasons = mutableListOf<String>()
 
-            if (title.isBlank() || title.length > MAX_TITLE_LENGTH)
-                reasons.add("Title may not be >100 characters")
+            if (title != null && (title.isBlank() || title.length > MAX_TITLE_LENGTH))
+                reasons.add("Title may not be blank or >100 characters")
 
-            if (body.isBlank() || body.length > MAX_BODY_LENGTH)
-                reasons.add("Body may not be >5000 characters")
+            if (body != null && (body.isBlank() || body.length > MAX_BODY_LENGTH))
+                reasons.add("Body may not be blank or >5000 characters")
 
             return if (reasons.isEmpty())
                 ValidationResult.Valid

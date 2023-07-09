@@ -19,11 +19,11 @@ fun Route.patchIllustration() {
 
         transaction {
             illustration.apply {
-                title = it.title
-                body = it.body
-                commentsEnabled = it.commentsEnabled
-                isPrivate = it.isPrivate
-                isAi = it.isAi
+                it.title?.let { title = it }
+                it.body?.let { body = it }
+                it.commentsEnabled?.let { commentsEnabled = it }
+                it.isPrivate?.let { isPrivate = it }
+                it.isAi?.let { isAi = it }
             }
         }
 
