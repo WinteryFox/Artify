@@ -1,19 +1,25 @@
 package com.artify.api.routes.users
 
+import com.artify.api.entity.Illustrations
+import com.artify.api.entity.Illustrations.Response.Companion.asResponse
 import com.artify.api.entity.Users.Response.Companion.asResponse
 import com.artify.api.routes.auth.getSelf
-import com.artify.api.routes.auth.getUser
+import com.artify.api.routes.users.id.follow.deleteFollow
+import com.artify.api.routes.users.id.follow.postFollow
+import com.artify.api.routes.users.id.getUser
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.*
 
 fun Route.usersRoute() {
     route("/users") {
-        authenticate {
-            route("/@me") {
+        route("/@me") {
+            authenticate {
                 get {
                     call.respond(HttpStatusCode.OK, getSelf()!!.asResponse())
                 }
@@ -32,11 +38,28 @@ fun Route.usersRoute() {
             }
         }
 
-        route("/{id}") {
+        route(Regex("(?<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")) {
+            getUser()
+
             get {
-                getUser(call.parameters["id"]!!)?.asResponse()?.let {
-                    call.respond(HttpStatusCode.OK, it)
-                } ?: call.respond(HttpStatusCode.NotFound)
+                val userId = UUID.fromString(call.parameters["id"])!!
+
+                val illustrations = transaction {
+                    Illustrations.Entity.find {
+                        Illustrations.Table.userId.eq(userId)
+                            .and(Illustrations.Table.isPrivate.neq(true))
+                    }.map { it.asResponse() }
+                }
+
+                call.respond(HttpStatusCode.OK, illustrations)
+            }
+
+            route("/follow") {
+                authenticate {
+                    postFollow()
+
+                    deleteFollow()
+                }
             }
         }
     }

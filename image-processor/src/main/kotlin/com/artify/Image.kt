@@ -34,8 +34,10 @@ suspend fun S3Client.putImage(bucket: String, key: String, image: BufferedImage,
     return putObject {
         this.bucket = bucket
         this.key = key
-        body = ByteStream.fromBytes(image.toByteArray(type))
-        contentType = type
-        contentLength = bytes.size.toLong()
+        body = ByteStream.fromBytes(bytes)
+        metadata = mapOf(
+            "Content-Type" to "image/png",
+            "Content-Length" to bytes.size.toString()
+        )
     }
 }

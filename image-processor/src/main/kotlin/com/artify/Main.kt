@@ -2,6 +2,8 @@ package com.artify
 
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
+import aws.sdk.kotlin.services.s3.model.NoSuchKey
+import aws.sdk.kotlin.services.s3.model.NotFound
 import aws.sdk.kotlin.services.s3.model.S3Exception
 import aws.smithy.kotlin.runtime.content.toByteArray
 import com.artify.json.message.ImageProcessorMessage
@@ -35,62 +37,64 @@ suspend fun main() {
         password = System.getenv("RABBITMQ_PASSWORD")
     }
 
-    withContext(Dispatchers.Default) {
-        launch {
-            val connection = factory.newConnection(System.getenv("RABBITMQ_HOST"))
-            val channel = connection.createChannel()
+    val connection = factory.newConnection(System.getenv("RABBITMQ_HOST"))
+    val channel = connection.createChannel()
 
-            channel.queueDeclare("scaling_queue", true, false, false, null)
-            channel.basicConsume(
-                "scaling_queue",
-                false,
-                DeliverCallback { consumerTag, message ->
-                    logger.trace { "Received new message for consumer $consumerTag" }
+    channel.queueDeclare("scaling_queue", true, false, false, null)
+    channel.basicConsume(
+        "scaling_queue",
+        false,
+        DeliverCallback { consumerTag, message ->
+            runBlocking {
+                logger.trace { "Received new message for consumer $consumerTag" }
 
-                    val body = Json.decodeFromStream<ImageProcessorMessage>(message.body.inputStream())
+                val body = Json.decodeFromStream<ImageProcessorMessage>(message.body.inputStream())
 
-                    runBlocking {
-                        logger.trace { "Generating scaled thumbnails for hash ${body.hash}" }
+                logger.trace { "Generating scaled thumbnails for hash ${body.hash}" }
 
-                        try {
-                            s3client.getObject(GetObjectRequest {
-                                bucket = "artify-com"
-                                key = body.hash
-                            }) { `object` ->
-                                val image = ImageIO.read(`object`.body!!.toByteArray().inputStream())
+                try {
+                    s3client.getObject(GetObjectRequest {
+                        bucket = "artify-com"
+                        key = body.hash
+                    }) { `object` ->
+                        val image = ImageIO.read(`object`.body!!.toByteArray().inputStream())
 
-                                val cropped = image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
+                        val cropped =
+                            image.getSubimage(body.position.x, body.position.y, body.size.x, body.size.y)
 
-                                body.scales.map {
-                                    launch {
-                                        logger.trace { "Generating scaled down thumbnail at ${it.x}x${it.y}" }
+                        body.scales.map {
+                            launch {
+                                logger.trace { "Generating scaled down thumbnail at ${it.x}x${it.y}" }
 
-                                        s3client.putImage(
-                                            "artify-com",
-                                            "${body.hash}/${it.x}x${it.y}",
-                                            cropped.scale(it.x, it.y),
-                                            `object`.contentType!!
-                                        )
+                                s3client.putImage(
+                                    "artify-com",
+                                    "${body.hash}/${it.x}x${it.y}",
+                                    cropped.scale(it.x, it.y),
+                                    `object`.contentType!!
+                                )
 
-                                        logger.trace { "Finished generating thumbnail at ${it.x}x${it.y}" }
-                                    }
-                                }.joinAll()
-
-                                logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
+                                logger.debug { "Finished generating thumbnail at ${it.x}x${it.y}" }
                             }
-                        } catch (e: S3Exception) {
-                            logger.error { "Failed to fetch object ${body.hash}" }
-                            return@runBlocking
                         }
-                    }
 
-                    channel.basicAck(message.envelope.deliveryTag, false)
-                    logger.trace { "Acknowledged message with delivery tag ${message.envelope.deliveryTag}" }
-                },
-                CancelCallback {
-                    logger.trace { "Consumer $it was cancelled" }
+                        logger.trace { "Finished generating thumbnails for hash ${body.hash}" }
+                    }
+                } catch (e: NotFound) {
+                    logger.error { "Failed to fetch object ${body.hash}" }
+                } catch (e: NoSuchKey) {
+                    logger.error { "Failed to fetch object ${body.hash}" }
+                } catch (e: S3Exception) {
+                    logger.catching(e)
+                    channel.basicNack(message.envelope.deliveryTag, false, true)
+                    return@runBlocking
                 }
-            )
+
+                channel.basicAck(message.envelope.deliveryTag, false)
+                logger.trace { "Acknowledged message with delivery tag ${message.envelope.deliveryTag}" }
+            }
+        },
+        CancelCallback {
+            logger.trace { "Consumer $it was cancelled" }
         }
-    }
+    )
 }

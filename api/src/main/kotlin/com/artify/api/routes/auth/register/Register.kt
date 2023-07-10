@@ -23,6 +23,8 @@ fun Route.register(
     provider: CognitoIdentityProviderClient
 ) {
     post<Register> { request ->
+        // TODO: Check if handle is taken
+
         val result = try {
             provider.signUp {
                 username = request.email

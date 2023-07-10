@@ -59,10 +59,7 @@ fun Route.postIllustration(
                     bucket = "artify-com"
                     key = hash
                     body = ByteStream.fromBytes(bytes)
-                    metadata = mapOf(
-                        "Content-Type" to "image/png",
-                        "Content-Length" to bytes.size.toString()
-                    )
+                    contentType = "image/png"
                 }
 
                 return@async hash to image

@@ -17,7 +17,7 @@ object Illustrations {
     const val MAX_ILLUSTRATIONS = 10
 
     object Table : LongIdTable("media.illustrations", "id") {
-        val authorId = reference("user_id", Users.Table)
+        val userId = reference("user_id", Users.Table)
         val title = text("title")
         val body = text("body")
         val commentsEnabled = bool("comments_enabled")
@@ -29,7 +29,7 @@ object Illustrations {
     class Entity(id: EntityID<Long>) : LongEntity(id) {
         companion object : LongEntityClass<Entity>(Table)
 
-        var author by Users.Entity referencedOn Table.authorId
+        var author by Users.Entity referencedOn Table.userId
         var title by Table.title
         var body by Table.body
         var commentsEnabled by Table.commentsEnabled
