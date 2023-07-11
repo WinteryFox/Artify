@@ -31,6 +31,7 @@ postgresql = { group = "org.postgresql", name = "postgresql", version = "42.6.0"
 exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
 exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
 exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+exposed-time = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
 hikaricp = { group = "com.zaxxer", name = "HikariCP", version = "5.0.1" }
 amqp = { group = "com.rabbitmq", name = "amqp-client", version = "5.18.0" }
 
@@ -41,6 +42,8 @@ jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version
 jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jupiter" }
 
 sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.2.1.3168" }
+
+apache-validator = { group = "commons-validator", name = "commons-validator", version = "1.7" }
 
 [plugins]
 jib = { id = "com.google.cloud.tools.jib", version = "3.3.2" }

@@ -1,12 +1,32 @@
 CREATE SCHEMA media;
 CREATE SCHEMA interactions;
+CREATE SCHEMA tokens;
+
+/*CREATE TABLE users
+(
+    id            UUID        NOT NULL PRIMARY KEY,
+    email         TEXT        NOT NULL UNIQUE,
+    username      VARCHAR(16) NOT NULL,
+    discriminator VARCHAR(5)  NOT NULL,
+    display_name  TEXT        NOT NULL,
+    avatar        TEXT,
+    UNIQUE (username, discriminator)
+);*/
 
 CREATE TABLE users
 (
     id       UUID NOT NULL PRIMARY KEY,
+    email    TEXT NOT NULL UNIQUE,
     handle   TEXT NOT NULL UNIQUE,
     username TEXT NOT NULL,
     avatar   TEXT
+);
+
+CREATE TABLE tokens.email
+(
+    email  TEXT                        NOT NULL PRIMARY KEY,
+    token  TEXT                        NOT NULL,
+    expiry TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 
 CREATE TABLE media.tags
@@ -40,6 +60,6 @@ CREATE TABLE interactions.follows
 (
     target_id UUID NOT NULL REFERENCES users (id),
     user_id   UUID NOT NULL REFERENCES users (id),
-    CHECK (target_id != user_id),
-    PRIMARY KEY (target_id, user_id)
+    PRIMARY KEY (target_id, user_id),
+    CHECK (target_id != user_id)
 );

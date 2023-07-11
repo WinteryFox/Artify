@@ -9,16 +9,22 @@ import java.util.*
 
 object Users {
     object Table : UUIDTable("users", "id") {
-        val handle = text("handle").uniqueIndex()
+        val email = text("email").uniqueIndex()
+        val handle = text("handle")
         val username = text("username")
+        //val discriminator = varchar("discriminator", 5)
+        //val displayName = text("display_name")
         val avatar = text("avatar").nullable()
     }
 
     class Entity(id: EntityID<UUID>) : UUIDEntity(id) {
         companion object : UUIDEntityClass<Entity>(Table)
 
+        var email by Table.email
         var handle by Table.handle
         var username by Table.username
+        //var discriminator by Table.discriminator
+        //var displayName by Table.displayName
         var avatar by Table.avatar
     }
 
@@ -27,6 +33,8 @@ object Users {
         val id: String,
         val handle: String,
         val username: String,
+        //val discriminator: String,
+        //val displayName: String,
         val avatar: String?
     ) {
         companion object {
@@ -34,6 +42,31 @@ object Users {
                 id.value.toString(),
                 handle,
                 username,
+                //discriminator,
+                //displayName,
+                avatar
+            )
+        }
+    }
+
+    @Serializable
+    data class ResponseWithEmail(
+        val id: String,
+        val email: String,
+        val handle: String,
+        val username: String,
+        //val discriminator: String,
+        //val displayName: String,
+        val avatar: String?
+    ) {
+        companion object {
+            fun Entity.asResponseWithEmail() = ResponseWithEmail(
+                id.value.toString(),
+                email,
+                handle,
+                username,
+                //discriminator,
+                //displayName,
                 avatar
             )
         }

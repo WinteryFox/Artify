@@ -66,7 +66,7 @@ data class Register(
 @Serializable
 data class Verify(
     val email: String,
-    val code: String
+    val token: String
 )
 
 fun Route.authRoute(provider: CognitoIdentityProviderClient) {
@@ -86,7 +86,7 @@ fun Route.authRoute(provider: CognitoIdentityProviderClient) {
         register(cognitoClientId, cognitoClientSecret, provider)
 
         route("/verify") {
-            verify(cognitoClientId, cognitoClientSecret, provider)
+            verify(cognitoPoolId, provider)
         }
     }
 }

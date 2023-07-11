@@ -38,11 +38,14 @@ dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.time)
     implementation(libs.hikaricp)
     runtimeOnly(libs.postgresql)
 
     implementation(libs.aws.s3)
     implementation(libs.aws.cognitoidp)
+
+    implementation(libs.apache.validator)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.bundles.jupiter)
