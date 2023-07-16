@@ -91,16 +91,17 @@ fun Route.authRoute(provider: CognitoIdentityProviderClient) {
     }
 }
 
-fun PipelineContext<*, ApplicationCall>.getSelf(): Users.Entity? {
-    val principal = call.principal<JWTPrincipal>() ?: return null
-    val uuid = try {
-        UUID.fromString(principal.subject)
-    } catch (e: IllegalArgumentException) {
-        return null
+fun PipelineContext<*, ApplicationCall>.getSelfId(): UUID? =
+    call.principal<JWTPrincipal>()?.let {
+        try {
+            UUID.fromString(it.subject)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
     }
 
-    return transaction { Users.Entity.findById(uuid) }
-}
+fun PipelineContext<*, ApplicationCall>.getSelf(): Users.Entity? =
+    transaction { getSelfId()?.let { Users.Entity.findById(it) } }
 
 fun getUser(id: String): Users.Entity? {
     val uuid = try {

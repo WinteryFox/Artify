@@ -1,6 +1,3 @@
-CREATE SCHEMA media;
-CREATE SCHEMA interactions;
-
 CREATE TABLE users
 (
     id       UUID NOT NULL PRIMARY KEY,
@@ -8,6 +5,8 @@ CREATE TABLE users
     username TEXT NOT NULL,
     avatar   TEXT
 );
+
+CREATE SCHEMA media;
 
 CREATE TABLE media.tags
 (
@@ -28,6 +27,8 @@ CREATE TABLE media.illustrations
     is_ai            BOOLEAN NOT NULL,
     hashes           TEXT[]  NOT NULL CHECK (array_length(hashes, 1) <= 10)
 );
+
+CREATE SCHEMA interactions;
 
 CREATE TABLE interactions.likes
 (

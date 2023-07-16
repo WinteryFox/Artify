@@ -3,6 +3,8 @@ package com.artify.api.routes.illustrations
 import aws.sdk.kotlin.services.s3.S3Client
 import com.artify.api.routes.illustrations.id.deleteIllustration
 import com.artify.api.routes.illustrations.id.getIllustration
+import com.artify.api.routes.illustrations.id.likes.deleteLike
+import com.artify.api.routes.illustrations.id.likes.postLike
 import com.artify.api.routes.illustrations.id.patchIllustration
 import com.rabbitmq.client.Connection
 import io.ktor.server.auth.*
@@ -30,6 +32,12 @@ fun Route.illustrationsRoute(
                 patchIllustration()
 
                 deleteIllustration()
+
+                route("/likes") {
+                    postLike()
+
+                    deleteLike()
+                }
             }
         }
     }
