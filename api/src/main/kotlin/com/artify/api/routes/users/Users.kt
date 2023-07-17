@@ -12,7 +12,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -47,7 +46,6 @@ fun Route.usersRoute() {
                 val illustrations = transaction {
                     Illustrations.Entity.find {
                         Illustrations.Table.userId.eq(userId)
-                            .and(Illustrations.Table.isPrivate.neq(true))
                     }.map { it.asResponse() }
                 }
 

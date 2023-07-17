@@ -72,8 +72,6 @@ fun Route.postIllustration(
                 title = request.title
                 body = request.body
                 commentsEnabled = request.commentsEnabled
-                isPrivate = request.isPrivate
-                isAi = request.isAi
                 hashes = images.keys.toTypedArray()
             }.asResponse()
         }

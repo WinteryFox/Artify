@@ -16,13 +16,11 @@ object Illustrations {
     const val MAX_BODY_LENGTH = 5000
     const val MAX_ILLUSTRATIONS = 10
 
-    object Table : LongIdTable("media.illustrations", "id") {
+    object Table : LongIdTable("illustrations.posts", "id") {
         val userId = reference("user_id", Users.Table)
         val title = text("title")
         val body = text("body")
         val commentsEnabled = bool("comments_enabled")
-        val isPrivate = bool("is_private")
-        val isAi = bool("is_ai")
         val hashes = textArray("hashes")
     }
 
@@ -33,8 +31,6 @@ object Illustrations {
         var title by Table.title
         var body by Table.body
         var commentsEnabled by Table.commentsEnabled
-        var isPrivate by Table.isPrivate
-        var isAi by Table.isAi
         var hashes by Table.hashes
     }
 
@@ -47,10 +43,6 @@ object Illustrations {
         val body: String,
         @SerialName("comments_enabled")
         val commentsEnabled: Boolean,
-        @SerialName("is_private")
-        val isPrivate: Boolean,
-        @SerialName("is_ai")
-        val isAi: Boolean,
         val hashes: List<String>
     ) {
         companion object {
@@ -60,8 +52,6 @@ object Illustrations {
                 title,
                 body,
                 commentsEnabled,
-                isPrivate,
-                isAi,
                 hashes.toList()
             )
         }
@@ -75,10 +65,6 @@ object Illustrations {
         val body: String,
         @SerialName("comments_enabled")
         val commentsEnabled: Boolean,
-        @SerialName("is_private")
-        val isPrivate: Boolean,
-        @SerialName("is_ai")
-        val isAi: Boolean,
         val hashes: List<String>
     ) {
         companion object {
@@ -91,8 +77,6 @@ object Illustrations {
                     title,
                     body,
                     commentsEnabled,
-                    isPrivate,
-                    isAi,
                     hashes.toList()
                 )
             }
@@ -105,10 +89,6 @@ object Illustrations {
         val body: String,
         @SerialName("comments_enabled")
         val commentsEnabled: Boolean,
-        @SerialName("is_private")
-        val isPrivate: Boolean,
-        @SerialName("is_ai")
-        val isAi: Boolean,
         val illustrations: List<String>
     ) {
         fun validate(): ValidationResult {
@@ -151,11 +131,7 @@ object Illustrations {
         val title: String? = null,
         val body: String? = null,
         @SerialName("comments_enabled")
-        val commentsEnabled: Boolean? = null,
-        @SerialName("is_private")
-        val isPrivate: Boolean? = null,
-        @SerialName("is_ai")
-        val isAi: Boolean? = null
+        val commentsEnabled: Boolean? = null
     ) {
         fun validate(): ValidationResult {
             val reasons = mutableListOf<String>()

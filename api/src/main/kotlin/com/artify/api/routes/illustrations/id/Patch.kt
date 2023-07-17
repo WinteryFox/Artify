@@ -22,8 +22,6 @@ fun Route.patchIllustration() {
                 it.title?.let { title = it }
                 it.body?.let { body = it }
                 it.commentsEnabled?.let { commentsEnabled = it }
-                it.isPrivate?.let { isPrivate = it }
-                it.isAi?.let { isAi = it }
             }
         }
 

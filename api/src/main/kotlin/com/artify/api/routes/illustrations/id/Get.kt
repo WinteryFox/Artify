@@ -7,7 +7,6 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun PipelineContext<*, ApplicationCall>.parseId(): Long? =
@@ -23,7 +22,7 @@ fun PipelineContext<*, ApplicationCall>.getIllustration(): Illustrations.Entity?
 fun getIllustration(id: Long): Illustrations.Entity? =
     transaction {
         Illustrations.Entity
-            .find { Illustrations.Table.id eq id and (Illustrations.Table.isPrivate neq true) }
+            .find { Illustrations.Table.id eq id }
             .singleOrNull()
     }
 

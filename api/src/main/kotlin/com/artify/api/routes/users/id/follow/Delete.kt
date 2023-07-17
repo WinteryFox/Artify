@@ -8,7 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.deleteIgnoreWhere
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -21,7 +21,7 @@ fun Route.deleteFollow() {
             return@delete call.respond(HttpStatusCode.BadRequest)
 
         transaction {
-            Follows.Table.deleteIgnoreWhere {
+            Follows.Table.deleteWhere {
                 userId.eq(self.id).and(targetId.eq(id))
             }
         }

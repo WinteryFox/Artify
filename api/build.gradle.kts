@@ -18,7 +18,7 @@ dependencies {
     implementation(libs.kotlinx.serialization)
 
     implementation(libs.logging.kotlinLogging)
-    runtimeOnly(libs.logging.logback)
+    runtimeOnly(libs.bundles.logback)
 
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
