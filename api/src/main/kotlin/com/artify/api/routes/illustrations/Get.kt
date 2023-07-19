@@ -18,9 +18,11 @@ const val illustrations = 25
 private enum class Mode(
     val value: Short
 ) {
-    TRENDING(0),
-    RECENT(1),
-    FOLLOWING(2);
+    SIMILAR(0), // Any posts similar to the user's previous interests (liked work)
+    NOVEL(1), // Similar but with 50% new content further away from interests
+    TRENDING(2), // Anything with an increased amount of interactions the last week
+    RECENT(3), // Sorted by most recent post date
+    FOLLOWING(4); // Posts from whoever the user is following sorted by recency
 
     companion object {
         fun fromInt(value: Short) = entries.firstOrNull { it.value == value }
@@ -36,6 +38,10 @@ fun Route.getIllustrations() {
 
         val illustrations = transaction {
             when (mode) {
+                Mode.SIMILAR -> TODO()
+
+                Mode.NOVEL -> TODO()
+
                 Mode.TRENDING -> TODO()
 
                 Mode.RECENT -> Illustrations.Entity.all()
