@@ -10,10 +10,7 @@ CREATE SCHEMA metadata;
 
 CREATE TABLE metadata.tags
 (
-    id       BIGINT NOT NULL,
-    language TEXT   NOT NULL,
-    src      TEXT   NOT NULL,
-    PRIMARY KEY (id, language)
+    id SMALLSERIAL PRIMARY KEY
 );
 
 CREATE SCHEMA illustrations;
@@ -26,6 +23,13 @@ CREATE TABLE illustrations.posts
     body             TEXT    NOT NULL CHECK (length(body) <= 5000),
     comments_enabled BOOLEAN NOT NULL,
     hashes           TEXT[]  NOT NULL CHECK (array_length(hashes, 1) > 0 AND array_length(hashes, 1) <= 10)
+);
+
+CREATE TABLE illustrations.tags
+(
+    tag_id  INT    NOT NULL REFERENCES metadata.tags (id),
+    post_id BIGINT NOT NULL REFERENCES illustrations.posts (id),
+    PRIMARY KEY (tag_id, post_id)
 );
 
 CREATE SCHEMA interactions;

@@ -12,7 +12,8 @@ import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-const val limit = 15
+const val default = 10
+const val illustrations = 25
 
 private enum class Mode(
     val value: Short
@@ -29,22 +30,23 @@ private enum class Mode(
 fun Route.getIllustrations() {
     get {
         val selfId = getSelfId()
-        val mode =
-            call.request.queryParameters["mode"]?.toShortOrNull()?.let { Mode.fromInt(it) }
-                ?: return@get call.respond(HttpStatusCode.BadRequest)
+        val mode = call.request.queryParameters["mode"]?.toShortOrNull()?.let { Mode.fromInt(it) } ?: Mode.TRENDING
+        val limit =
+            call.request.queryParameters["limit"]?.toShortOrNull()?.coerceAtMost(illustrations.toShort()) ?: default
 
         val illustrations = transaction {
             when (mode) {
                 Mode.TRENDING -> TODO()
 
                 Mode.RECENT -> Illustrations.Entity.all()
-                    .limit(limit)
+                    .limit(limit.toInt())
+                    .orderBy(Illustrations.Table.id to SortOrder.DESC)
 
                 Mode.FOLLOWING -> Illustrations.Entity.find {
                     userId inSubQuery
                             Follows.Table.select { (Follows.Table.userId eq selfId) }
                                 .adjustSlice { slice(Follows.Table.targetId) }
-                }.limit(limit)
+                }.limit(limit.toInt())
             }
                 .orderBy(Illustrations.Table.id to SortOrder.DESC)
                 .map { it.asResponseWithAuthor() }
