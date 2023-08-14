@@ -2,7 +2,7 @@
 kotlin = "1.9.0"
 ktor = "2.3.2"
 exposed = "0.42.0"
-aws = "0.29.1-beta"
+aws = "0.30.0-beta"
 jupiter = "5.10.0"
 
 [libraries]
