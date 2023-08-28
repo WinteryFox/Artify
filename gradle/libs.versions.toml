@@ -8,7 +8,7 @@ jupiter = "5.10.0"
 [libraries]
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version = "1.7.3" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.4.0" }
-kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5.1" }
+kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.0" }
 
 logging-kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version = "5.1.0" }
 logging-jansi = { group = "org.fusesource.jansi", name = "jansi", version = "2.4.0" }
