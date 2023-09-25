@@ -43,7 +43,7 @@ jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", v
 sonarqube = { group = "org.sonarsource.scanner.gradle", name = "sonarqube-gradle-plugin", version = "4.2.1.3168" }
 
 [plugins]
-jib = { id = "com.google.cloud.tools.jib", version = "3.3.2" }
+jib = { id = "com.google.cloud.tools.jib", version = "3.4.0" }
 
 [bundles]
 logback = ["logging-logback", "logging-jansi"]
